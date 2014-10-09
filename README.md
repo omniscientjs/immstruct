@@ -2,7 +2,7 @@ structure.js
 ===
 
 Experimental project for having top-to-bottom rerender of global
-state in Reac.js using Immutable.js.
+state in React.js using Immutable.js.
 
 ```js
 // someFile.js
@@ -41,38 +41,4 @@ cursor = cursor.update(function (x) {
 });
 
 console.log(cursor.deref()); //=> 3
-```
-
-
-## Goal
-
-Achieve something like the following
-
-```js
-var structure = require('immstruct')('myKey');
-
-var App = React.createClass({
-  mixins: [require('immstruct/mixins/setProps')],
-
-  componentDidMount: function () {
-    this.setProps({
-      value: 'foo'
-    });
-  },
-
-  render: function() {
-    return React.DOM.h1(null,
-      this.props.cursor.get('value')
-    );
-  }
-});
-
-var body = document.querySelector('body');
-function render () {
-  console.log('Render');
-  React.renderComponent(App({ cursor: structure.cursor(['app']) }), body);
-}
-
-render();
-structure.on('render', render);
 ```

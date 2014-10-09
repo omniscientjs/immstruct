@@ -20,9 +20,11 @@ function Structure (options) {
 module.exports = Structure;
 
 Structure.prototype.cursor = function (path) {
-  if (!data) {
-    throw new Error('No structure loaded. See structure.load');
+  if (!this.current) {
+    throw new Error('No structure loaded.');
   }
+
+  path = path || [];
 
   var self = this;
   return self.current.cursor(path,
