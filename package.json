@@ -1,0 +1,33 @@
+{
+  "name": "structure.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikaelbr/structure.js.git"
+  },
+  "keywords": [
+    "immutable",
+    "react",
+    "structure",
+    "properties",
+    "mixins"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikaelbr/structure.js/issues"
+  },
+  "homepage": "https://github.com/mikaelbr/structure.js",
+  "dependencies": {
+    "immutable": "^2.2.1",
+    "inherits": "^2.0.1"
+  }
+}
