@@ -6,7 +6,7 @@ state in Reac.js using Immutable.js.
 
 ```js
 // someFile.js
-var structure = require('./')('myKey', {
+var structure = require('immstruct')('myKey', {
   a: {
     b: {
       c: 1
@@ -33,7 +33,7 @@ console.log(cursor.deref()); //=> 2
 
 ```js
 // anotherFile.js
-var structure = require('./')('myKey');
+var structure = require('immstruct')('myKey');
 
 var cursor = structure.cursor(['a', 'b', 'c']);
 cursor = cursor.update(function (x) {
@@ -49,10 +49,10 @@ console.log(cursor.deref()); //=> 3
 Achieve something like the following
 
 ```js
-var structure = require('./')('myKey');
+var structure = require('immstruct')('myKey');
 
 var App = React.createClass({
-  mixins: [require('structure.js/mixins/setProps')],
+  mixins: [require('immstruct/mixins/setProps')],
 
   componentDidMount: function () {
     this.setProps({
