@@ -20,7 +20,10 @@
     "properties",
     "mixins"
   ],
-  "author": "",
+  "author": "Mikael Brevik <mikaelbre@gmail.com>",
+  "contributors": [
+    "@torgeir"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mikaelbr/immstruct/issues"
