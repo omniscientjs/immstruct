@@ -20,8 +20,9 @@
     "properties",
     "mixins"
   ],
-  "author": "Mikael Brevik <mikaelbre@gmail.com>",
+  "author": "Mikael Brevik, @torgeir",
   "contributors": [
+    "Mikael Brevik",
     "@torgeir"
   ],
   "license": "MIT",
