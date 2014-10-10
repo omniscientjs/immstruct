@@ -39,7 +39,7 @@ Structure.prototype.cursor = function (path) {
 function handleUpdate (emitter, fn) {
   return function () {
     var original = fn.apply(fn, arguments);
-    emitter.emit('render');
+    emitter.emit('swap');
     return original;
   };
 }
@@ -55,9 +55,9 @@ function handlePersisting (emitter, fn) {
     if (inOld && !inNew) {
       emit(emitter, 'delete', path, oldObject);
     } else if (inOld && inNew) {
-      emit(emitter, 'update', path, newObject, oldObject);
+      emit(emitter, 'change', path, newObject, oldObject);
     } else {
-      emit(emitter, 'create', path, newObject);
+      emit(emitter, 'add', path, newObject);
     }
 
     return fn.apply(fn, arguments);
