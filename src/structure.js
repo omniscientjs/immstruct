@@ -36,6 +36,11 @@ Structure.prototype.cursor = function (path) {
   );
 };
 
+Structure.prototype.forceHasSwapped = function () {
+  this.emit('swap');
+};
+
+
 function handleUpdate (emitter, fn) {
   return function () {
     var original = fn.apply(fn, arguments);
