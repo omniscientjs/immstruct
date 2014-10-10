@@ -1,4 +1,6 @@
-var structure = require('./')({
+var immstruct = require('./');
+
+var structure = immstruct({
   a: {
     b: {
       c: 1
@@ -9,14 +11,14 @@ var structure = require('./')({
 console.log('Created structure with key:', structure.key);
 
 // or key if already set:
-// var structure = require('./')('key');
-
+// var structure = immstruct('key');
 
 
 var cursor = structure.cursor(['a', 'b', 'c']);
 
-// Same for 'update', 'create' and 'delete'
-structure.on('update', function (url, obj) {
+// When a sub-tree has been altered in some way.
+// Same for 'change', 'add' and 'delete'
+structure.on('change', function (url, obj) {
   console.log('Updated', url, obj);
 
   // Check if we want to do some ajax?
@@ -27,7 +29,8 @@ structure.on('update', function (url, obj) {
   // });
 });
 
-structure.on('render', function (url, obj) {
+// When the structure it self is swaped
+structure.on('swap', function (url, obj) {
   console.log('Render new components');
   // e.g.
   // React.renderComponent(

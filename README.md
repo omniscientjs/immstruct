@@ -14,7 +14,7 @@ var structure = require('immstruct')('myKey', {
   }
 });
 
-structure.on('render', function (url, obj) {
+structure.on('swap', function (url, obj) {
   console.log('Render new components');
   // e.g.
   // React.renderComponent(
