@@ -5,7 +5,7 @@ var utils = require('./utils');
 
 
 inherits(Structure, EventEmitter);
-function Structure (options) {
+function Structure (options) {
   options = options || {};
   if (!(this instanceof Structure)) {
     return new Structure(options);
@@ -29,7 +29,7 @@ Structure.prototype.cursor = function (path) {
   var self = this;
   return self.current.cursor(path,
     handlePersisting(self,
-      handleUpdate(self, function (newData, oldData, path) {
+      handleUpdate(self, function (newData, oldData, path) {
         self.current = newData;
       })
     )
@@ -50,7 +50,7 @@ function handleUpdate (emitter, fn) {
 }
 
 function handlePersisting (emitter, fn) {
-  return function (newData, oldData, path) {
+  return function (newData, oldData, path) {
     var oldObject = oldData.getIn(path);
     var newObject = newData.getIn(path);
 
