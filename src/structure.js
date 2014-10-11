@@ -40,7 +40,6 @@ Structure.prototype.forceHasSwapped = function () {
   this.emit('swap');
 };
 
-
 function handleUpdate (emitter, fn) {
   return function () {
     var original = fn.apply(fn, arguments);
@@ -51,17 +50,17 @@ function handleUpdate (emitter, fn) {
 
 function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
-    var oldObject = oldData.getIn(path);
-    var newObject = newData.getIn(path);
+    var oldObject = oldData && oldData.getIn(path);
+    var newObject = newData && newData.getIn(path);
 
     var inOld = !!oldObject;
     var inNew = !!newObject;
 
-    if (inOld && !inNew) {
+    if (inOld && !inNew && oldObject) {
       emit(emitter, 'delete', path, oldObject);
-    } else if (inOld && inNew) {
+    } else if (inOld && inNew && oldObject) {
       emit(emitter, 'change', path, newObject, oldObject);
-    } else {
+    } else if (newObject) {
       emit(emitter, 'add', path, newObject);
     }
 

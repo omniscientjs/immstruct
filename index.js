@@ -7,7 +7,7 @@ module.exports = function (key, data) {
     data = key;
     key = void 0;
   }
-  
+
   if (key && instances[key]) {
     return instances[key];
   }
