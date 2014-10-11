@@ -42,7 +42,7 @@ Structure.prototype.forceHasSwapped = function () {
 
 
 function handleUpdate (emitter, fn) {
-  return function () {
+  return function () {
     var original = fn.apply(fn, arguments);
     emitter.emit('swap');
     return original;
