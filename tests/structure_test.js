@@ -17,6 +17,12 @@ describe('immstruct', function () {
     });
   });
 
+  it('should be able to force trigger swap', function (done) {
+    var structure = new Structure();
+    structure.on('swap', done);
+    structure.forceHasSwapped();
+  });
+
   it('should trigger change with data when existing property is changed', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
