@@ -140,3 +140,8 @@ A Structure object is an event emitter and emits the following events:
 
 [depstat-url]: https://gemnasium.com/omniscientjs/immstruct
 [depstat-image]: http://img.shields.io/gemnasium/omniscientjs/immstruct.svg?style=flat
+
+
+## License
+
+[MIT License](http://en.wikipedia.org/wiki/MIT_License)
