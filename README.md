@@ -130,7 +130,7 @@ A Structure object is an event emitter and emits the following events:
 * `delete`: Emitted when data/value is removed. Emits value: `removedValue`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue`.
 
-
+[See tests for event examples](./tests/immstruct_test.js)
 
 [npm-url]: https://npmjs.org/package/immstruct
 [npm-image]: http://img.shields.io/npm/v/immstruct.svg?style=flat
