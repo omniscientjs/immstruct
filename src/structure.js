@@ -59,24 +59,13 @@ function handlePersisting (emitter, fn) {
     var inNew = !!newObject;
 
     if (inOld && !inNew && oldObject) {
-      emit(emitter, 'delete', path, oldObject);
+      emitter.emit('delete', path, oldObject);
     } else if (inOld && inNew && oldObject && newObject) {
-      emit(emitter, 'change', path, newObject, oldObject);
+      emitter.emit('change', path, newObject, oldObject);
     } else if (newObject) {
-      emit(emitter, 'add', path, newObject);
+      emitter.emit('add', path, newObject);
     }
 
     return fn.apply(fn, arguments);
   };
-}
-
-function emit (emitter, verb, path, object) {
-  var url = path.join('/');
-  if (typeof object.url === 'function') {
-    url = object.url();
-  } else if (typeof object.url === 'string') {
-    url = object.url;
-  }
-
-  emitter.emit(verb, url, object);
 }
