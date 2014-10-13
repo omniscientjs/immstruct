@@ -20,3 +20,8 @@ module.exports = function (key, data) {
   instances[newInstance.key] = newInstance;
   return newInstance;
 };
+
+
+module.exports.clear = function () {
+  instances = {};
+};
