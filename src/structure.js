@@ -30,7 +30,9 @@ Structure.prototype.cursor = function (path) {
   return self.current.cursor(path,
     handlePersisting(self,
       handleUpdate(self, function (newData, oldData, path) {
-        self.current = newData;
+        self.current = self.current.updateIn(path, function (data) {
+          return newData.getIn(path);
+        });
       })
     )
   );
