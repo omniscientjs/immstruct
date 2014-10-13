@@ -1,5 +1,5 @@
-Immstruct
-===
+Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][depstat-image]][depstat-url]
+======
 
 A wrapper for [Immutable.js](https://github.com/facebook/immutable-js#cursors) to easily create cursors that notify if they
 are updated. Handy for usage with immutable pure components for views,
@@ -129,3 +129,14 @@ A Structure object is an event emitter and emits the following events:
 * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue` and `oldValue`.
 * `delete`: Emitted when data/value is removed. Emits value: `removedValue`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue`.
+
+
+
+[npm-url]: https://npmjs.org/package/immstruct
+[npm-image]: http://img.shields.io/npm/v/immstruct.svg?style=flat
+
+[travis-url]: http://travis-ci.org/omniscientjs/immstruct
+[travis-image]: http://img.shields.io/travis/omniscientjs/immstruct.svg?style=flat
+
+[depstat-url]: https://gemnasium.com/omniscientjs/immstruct
+[depstat-image]: http://img.shields.io/gemnasium/omniscientjs/immstruct.svg?style=flat
