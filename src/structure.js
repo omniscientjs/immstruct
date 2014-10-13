@@ -60,7 +60,7 @@ function handlePersisting (emitter, fn) {
 
     if (inOld && !inNew && oldObject) {
       emit(emitter, 'delete', path, oldObject);
-    } else if (inOld && inNew && oldObject) {
+    } else if (inOld && inNew && oldObject && newObject) {
       emit(emitter, 'change', path, newObject, oldObject);
     } else if (newObject) {
       emit(emitter, 'add', path, newObject);
