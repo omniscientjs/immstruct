@@ -3,7 +3,7 @@ Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][t
 
 A wrapper for [Immutable.js](https://github.com/facebook/immutable-js#cursors) to easily create cursors that notify if they
 are updated. Handy for usage with immutable pure components for views,
-like with [React.js](https://github.com/facebook/react).
+like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
 ## Example
 
