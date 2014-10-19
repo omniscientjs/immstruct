@@ -42,10 +42,28 @@ Structure.prototype.forceHasSwapped = function () {
   this.emit('swap');
 };
 
+var possiblyEmitAnimationFrameEvent = (function () {
+  var queuedChange = false;
+  if (typeof requestAnimationFrame !== 'function') {
+    return function () {};
+  }
+
+  return function requestAnimationFrameEmitter (emitter) {
+    if (queuedChange) return;
+    queuedChange = true;
+
+    requestAnimationFrame(function () {
+      queuedChange = false;
+      emitter.emit('next-animation-frame');
+    });
+  };
+}());
+
 function handleUpdate (emitter, fn) {
   return function () {
     var original = fn.apply(fn, arguments);
     emitter.emit('swap');
+    possiblyEmitAnimationFrameEvent(emitter);
     return original;
   };
 }
