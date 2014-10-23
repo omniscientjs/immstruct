@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/omniscient/immstruct",
   "dependencies": {
-    "immutable": "^2.2.1",
+    "immutable": "^2.5.1",
     "inherits": "^2.0.1"
   },
   "devDependencies": {
