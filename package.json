@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/omniscient/immstruct.git"
+    "url": "https://github.com/omniscientjs/immstruct.git"
   },
   "keywords": [
     "immutable",
@@ -26,9 +26,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/omniscient/immstruct/issues"
+    "url": "https://github.com/omniscientjs/immstruct/issues"
   },
-  "homepage": "https://github.com/omniscient/immstruct",
+  "homepage": "https://github.com/omniscientjs/immstruct",
   "dependencies": {
     "immutable": "^2.5.1",
     "inherits": "^2.0.1"
