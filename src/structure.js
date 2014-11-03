@@ -1,4 +1,5 @@
 var Immutable = require('immutable');
+var Cursor = require('immutable/contrib/cursor');
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 var utils = require('./utils');
@@ -27,7 +28,7 @@ Structure.prototype.cursor = function (path) {
   path = path || [];
 
   var self = this;
-  return self.current.cursor(path,
+  return Cursor.from(self.current, path,
     handlePersisting(self,
       handleUpdate(self, function (newData, oldData, path) {
         self.current = self.current.updateIn(path, function (data) {
