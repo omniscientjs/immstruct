@@ -1,9 +1,8 @@
 var Immutable = require('immutable');
 var Cursor = require('immutable/contrib/cursor');
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('eventemitter3').EventEmitter;
 var inherits = require('inherits');
 var utils = require('./utils');
-
 
 inherits(Structure, EventEmitter);
 function Structure (options) {
