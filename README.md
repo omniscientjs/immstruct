@@ -1,7 +1,7 @@
 Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][depstat-image]][depstat-url]
 ======
 
-A wrapper for [Immutable.js](https://github.com/facebook/immutable-js#cursors) to easily create cursors that notify if they
+A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/master/contrib/cursor) to easily create cursors that notify if they
 are updated. Handy for usage with immutable pure components for views,
 like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
@@ -111,7 +111,7 @@ var cursor = structure.cursor(['some', 'path', 'here']);
 cursor.get('subPath').update(updateFunction);
 ```
 
-See [Immutable.js cursors](https://github.com/facebook/immutable-js#cursors).
+See [Immutable.js cursors](https://github.com/facebook/immutable-js/tree/master/contrib/cursor).
 
 **Note:** You **probably never** want to use use `structure.current.cursor()`
 directly, as this won't add event handlers for when the cursor is updated.
