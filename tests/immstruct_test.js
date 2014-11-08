@@ -3,7 +3,7 @@ chai.should();
 
 var immstruct = require('../');
 
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('eventemitter3').EventEmitter;
 
 describe('immstruct', function () {
 
@@ -11,7 +11,7 @@ describe('immstruct', function () {
     immstruct.clear();
   });
 
-  it('should return an event emitter', function () {
+  it('should return an EventEmitter3', function () {
     immstruct('customKey').should.be.instanceof(EventEmitter);
   });
 

@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/omniscientjs/immstruct",
   "dependencies": {
+    "eventemitter3": "^0.1.5",
     "immutable": "^3.0.2",
     "inherits": "^2.0.1"
   },
