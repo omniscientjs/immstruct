@@ -6,11 +6,15 @@ var Structure = require('../src/structure');
 
 describe('immstruct', function () {
 
-  it('should trigger swap when structure is changed', function (done) {
+  it('should trigger swap when structure is changed with new and old data', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
     });
-    structure.on('swap', done);
+    structure.on('swap', function (newData, oldData) {
+      newData.toJS().should.eql({'foo': 'bar'});
+      oldData.toJS().should.eql({'foo': 'hello'});
+      done();
+    });
 
     structure.cursor(['foo']).update(function () {
       return 'bar';

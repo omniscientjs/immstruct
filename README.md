@@ -12,7 +12,7 @@ like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js]
 var structure = require('immstruct')('myKey', { a: { b: { c: 1 } } });
 
 // Use event `swap` or `next-animation-frame`
-structure.on('swap', function (url, obj) {
+structure.on('swap', function (newStructure, oldStructure) {
   console.log('Render new components');
   // e.g. with usage with React
   // React.renderComponent(
@@ -126,8 +126,8 @@ design components or view layers.
 
 A Structure object is an event emitter and emits the following events:
 
-* `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components.
-* `next-animation-frame`: Same as `swap`, but only emitted on animation frame. Could use with many render updates and better performance.
+* `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`.
+* `next-animation-frame`: Same as `swap`, but only emitted on animation frame. Could use with many render updates and better performance. Callback is passed arguments: `newStructure`, `oldStructure`.
 * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue` and `oldValue`.
 * `delete`: Emitted when data/value is removed. Emits value: `removedValue`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue`.

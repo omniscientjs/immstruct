@@ -30,7 +30,7 @@ Structure.prototype.cursor = function (path) {
   return Cursor.from(self.current, path,
     handlePersisting(self,
       handleUpdate(self, function (newData, oldData, path) {
-        self.current = self.current.updateIn(path, function (data) {
+        return self.current = self.current.updateIn(path, function (data) {
           return newData.getIn(path);
         });
       })
@@ -48,23 +48,23 @@ var possiblyEmitAnimationFrameEvent = (function () {
     return function () {};
   }
 
-  return function requestAnimationFrameEmitter (emitter) {
+  return function requestAnimationFrameEmitter (emitter, newStructure, oldData) {
     if (queuedChange) return;
     queuedChange = true;
 
     requestAnimationFrame(function () {
       queuedChange = false;
-      emitter.emit('next-animation-frame');
+      emitter.emit('next-animation-frame', newStructure, oldData);
     });
   };
 }());
 
 function handleUpdate (emitter, fn) {
-  return function () {
-    var original = fn.apply(fn, arguments);
-    emitter.emit('swap');
-    possiblyEmitAnimationFrameEvent(emitter);
-    return original;
+  return function (newData, oldData, path) {
+    var newStructure = fn.apply(fn, arguments);
+    emitter.emit('swap', newStructure, oldData);
+    possiblyEmitAnimationFrameEvent(emitter, newStructure, oldData);
+    return newStructure;
   };
 }
 
