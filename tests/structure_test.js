@@ -23,7 +23,9 @@ describe('immstruct', function () {
 
   it('should be able to force trigger swap', function (done) {
     var structure = new Structure();
-    structure.on('swap', done);
+    structure.on('swap', function () {
+      done();
+    });
     structure.forceHasSwapped();
   });
 

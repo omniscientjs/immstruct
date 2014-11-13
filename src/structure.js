@@ -38,8 +38,8 @@ Structure.prototype.cursor = function (path) {
   );
 };
 
-Structure.prototype.forceHasSwapped = function () {
-  this.emit('swap');
+Structure.prototype.forceHasSwapped = function (newData, oldData) {
+  this.emit('swap', newData || this.current, oldData);
 };
 
 var possiblyEmitAnimationFrameEvent = (function () {
