@@ -12,7 +12,12 @@ function Structure (options) {
   }
 
   this.key = options.key || utils.randString();
-  this.current = Immutable.fromJS(options.data || {});
+
+  if (options.data instanceof Immutable.Seq ||
+      options.data instanceof Immutable.Map)
+    this.current = options.data;
+  else
+    this.current = Immutable.fromJS(options.data || {});
 
   if (!!options.history) {
     this.history = Immutable.List.of(this.current);
