@@ -21,6 +21,12 @@ describe('immstruct', function () {
     structure.key.should.be.an('string');
   });
 
+  it('should be able to create structure with history', function () {
+    var structure = immstruct.withHistory({ foo: 'bar' });
+    structure.current.toJS().should.be.an('object');
+    structure.history.get(0).toJS().should.eql({ foo: 'bar' });
+  });
+
   it('should give structure with random key when js object given as only argument', function () {
     var structure = immstruct({ foo: 'hello' });
     structure.current.toJS().should.have.property('foo');

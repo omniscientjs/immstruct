@@ -14,6 +14,11 @@ function Structure (options) {
   this.key = options.key || utils.randString();
   this.current = Immutable.fromJS(options.data || {});
 
+  if (!!options.history) {
+    this.history = Immutable.List.of(this.current);
+    this._currentRevision = 0;
+  }
+
   EventEmitter.call(this, arguments);
 }
 
@@ -30,9 +35,16 @@ Structure.prototype.cursor = function (path) {
   return Cursor.from(self.current, path,
     handlePersisting(self,
       handleUpdate(self, function (newData, oldData, path) {
-        return self.current = self.current.updateIn(path, function (data) {
+        self.current = self.current.updateIn(path, function (data) {
           return newData.getIn(path);
         });
+
+        if (self.history) {
+          self.history = self.history
+            .take(++self._currentRevision)
+            .push(self.current);
+        }
+        return self.current;
       })
     )
   );
@@ -40,6 +52,33 @@ Structure.prototype.cursor = function (path) {
 
 Structure.prototype.forceHasSwapped = function (newData, oldData) {
   this.emit('swap', newData || this.current, oldData);
+};
+
+Structure.prototype.undo = function(back) {
+  this._currentRevision -= back || 1;
+  if (this._currentRevision < 0) {
+    this._currentRevision = 0;
+  }
+
+  this.current = this.history.get(this._currentRevision);
+  return this.current;
+};
+
+Structure.prototype.redo = function(head) {
+  this._currentRevision += head || 1;
+  if (this._currentRevision > this.history.count() - 1) {
+    this._currentRevision = this.history.count() - 1;
+  }
+
+  this.current = this.history.get(this._currentRevision);
+  return this.current;
+};
+
+Structure.prototype.undoUntil = function(structure) {
+  this._currentRevision = this.history.indexOf(structure);
+  this.current = structure;
+
+  return structure;
 };
 
 var possiblyEmitAnimationFrameEvent = (function () {
@@ -86,4 +125,9 @@ function handlePersisting (emitter, fn) {
 
     return fn.apply(fn, arguments);
   };
+}
+
+function revisionWarn () {
+  var msg = 'immstruct: Immutable History is not activated. See `options.deactivateHistory`';
+  console && console.warn && console.warn(msg);
 }

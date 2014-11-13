@@ -97,4 +97,89 @@ describe('immstruct', function () {
     cursor.deref().should.equal('bar');
   });
 
+  describe('undo/redo', function () {
+
+    it('should be able to undo default', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' },
+        history: true
+      });
+
+      structure.cursor('foo').update(function () { return 'hello'; });
+      structure.cursor('foo').deref().should.equal('hello');
+      structure.undo();
+      structure.cursor('foo').deref().should.equal('bar');
+      structure.cursor('foo').update(function () { return 'hello2'; });
+      structure.cursor('foo').deref().should.equal('hello2');
+      structure.history.toJS().should.eql([
+        { 'foo': 'bar' },
+        { 'foo': 'hello2' }
+      ]);
+    });
+
+    it('should be able to redo default', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' },
+        history: true
+      });
+
+      structure.cursor('foo').update(function () { return 'hello'; });
+      structure.cursor('foo').deref().should.equal('hello');
+      structure.undo();
+      structure.cursor('foo').deref().should.equal('bar');
+      structure.redo();
+      structure.cursor('foo').deref().should.equal('hello');
+    });
+
+    it('should be able undo multiple steps', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' },
+        history: true
+      });
+
+      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').deref().should.equal('Change 2');
+
+      structure.undo(2);
+      structure.cursor('foo').deref().should.equal('bar');
+    });
+
+    it('should be able redo multiple steps', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' },
+        history: true
+      });
+
+      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').update(function () { return 'Change 3'; });
+      structure.cursor('foo').deref().should.equal('Change 3');
+
+      structure.undo(3);
+      structure.cursor('foo').deref().should.equal('bar');
+
+      structure.redo(2);
+      structure.cursor('foo').deref().should.equal('Change 2');
+    });
+
+    it('should be able undo until object passed as argument', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' },
+        history: true
+      });
+
+      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').deref().should.equal('Change 1');
+      var change1 = structure.current;
+
+      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').deref().should.equal('Change 2');
+
+      structure.undoUntil(change1);
+      structure.cursor('foo').deref().should.equal('Change 1');
+    });
+
+  });
+
 });

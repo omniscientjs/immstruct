@@ -3,24 +3,34 @@ var Structure = require('./src/structure');
 var instances = {};
 
 module.exports = function (key, data) {
-  if (typeof key === 'object') {
-    data = key;
-    key = void 0;
-  }
-
-  if (key && instances[key]) {
-    return instances[key];
-  }
-
-  var newInstance = new Structure({
+  return getInstance({
     key: key,
     data: data
   });
-
-  instances[newInstance.key] = newInstance;
-  return newInstance;
 };
 
+module.exports.withHistory = function (key, data) {
+  return getInstance({
+    key: key,
+    data: data,
+    history: true
+  });
+};
+
+function getInstance (options) {
+  if (typeof options.key === 'object') {
+    options.data = options.key;
+    options.key = void 0;
+  }
+
+  if (options.key && instances[options.key]) {
+    return instances[options.key];
+  }
+
+  var newInstance = new Structure(options);
+  instances[newInstance.key] = newInstance;
+  return newInstance;
+}
 
 module.exports.clear = function () {
   instances = {};
