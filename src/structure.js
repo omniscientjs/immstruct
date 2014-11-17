@@ -4,7 +4,17 @@ var EventEmitter = require('eventemitter3').EventEmitter;
 var inherits = require('inherits');
 var utils = require('./utils');
 
-inherits(Structure, EventEmitter);
+/************************************
+ *
+ * ## Public API.
+ *   Constructor({ history: bool, key: string, data: structure|object })
+ *   .cursor(path)
+ *   .forceHasSwapped(newData, oldData)
+ *   .undo(steps)
+ *   .redo(steps)
+ *   .undoUntil(structure)
+ *
+ ************************************/
 function Structure (options) {
   options = options || {};
   if (!(this instanceof Structure)) {
@@ -25,7 +35,7 @@ function Structure (options) {
 
   EventEmitter.call(this, arguments);
 }
-
+inherits(Structure, EventEmitter);
 module.exports = Structure;
 
 Structure.prototype.cursor = function (path) {
@@ -43,7 +53,7 @@ Structure.prototype.cursor = function (path) {
   };
 
   changeListener = handleHistory(this, changeListener);
-  changeListener = handleUpdate(this, changeListener);
+  changeListener = handleSwap(this, changeListener);
   changeListener = handlePersisting(this, changeListener);
   return Cursor.from(self.current, path, changeListener);
 };
@@ -79,6 +89,26 @@ Structure.prototype.undoUntil = function(structure) {
   return structure;
 };
 
+
+/************************************
+ * Private decorators.
+ ***********************************/
+
+// Update history if history is active
+function handleHistory (emitter, fn) {
+  return function (newData, oldData, path) {
+    var newStructure = fn.apply(fn, arguments);
+    if (!emitter.history) return newStructure;
+
+    emitter.history = emitter.history
+      .take(++emitter._currentRevision)
+      .push(emitter.current);
+
+    return newStructure;
+  };
+}
+
+// Update history if history is active
 var possiblyEmitAnimationFrameEvent = (function () {
   var queuedChange = false;
   if (typeof requestAnimationFrame !== 'function') {
@@ -96,20 +126,8 @@ var possiblyEmitAnimationFrameEvent = (function () {
   };
 }());
 
-function handleHistory (emitter, fn) {
-  return function (newData, oldData, path) {
-    var newStructure = fn.apply(fn, arguments);
-    if (!emitter.history) return newStructure;
-
-    emitter.history = emitter.history
-      .take(++emitter._currentRevision)
-      .push(emitter.current);
-
-    return newStructure;
-  };
-}
-
-function handleUpdate (emitter, fn) {
+// Emit swap event on values are swapped
+function handleSwap (emitter, fn) {
   return function (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
     emitter.emit('swap', newStructure, oldData);
@@ -118,6 +136,7 @@ function handleUpdate (emitter, fn) {
   };
 }
 
+// Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
     var oldObject = oldData && oldData.getIn(path);
@@ -138,6 +157,10 @@ function handlePersisting (emitter, fn) {
   };
 }
 
+/************************************
+ * Private helpers.
+ ***********************************/
+
 // Check if passed structure is existing immutable structure.
 // From https://github.com/facebook/immutable-js/wiki/Upgrading-to-Immutable-v3#additional-changes
 function isImmutableStructure (data) {
@@ -152,9 +175,4 @@ function isImmutableStructure (data) {
 
 function immutableSafeCheck (ns, method, data) {
   return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
-}
-
-function revisionWarn () {
-  var msg = 'immstruct: Immutable History is not activated. See `options.deactivateHistory`';
-  console && console.warn && console.warn(msg);
 }
