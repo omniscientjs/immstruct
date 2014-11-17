@@ -30,29 +30,23 @@ function Structure (options) {
 module.exports = Structure;
 
 Structure.prototype.cursor = function (path) {
+  var self = this;
+  path = path || [];
+
   if (!this.current) {
     throw new Error('No structure loaded.');
   }
 
-  path = path || [];
+  var changeListener = function (newData, oldData, path) {
+    return self.current = self.current.updateIn(path, function (data) {
+      return newData.getIn(path);
+    });
+  };
 
-  var self = this;
-  return Cursor.from(self.current, path,
-    handlePersisting(self,
-      handleUpdate(self, function (newData, oldData, path) {
-        self.current = self.current.updateIn(path, function (data) {
-          return newData.getIn(path);
-        });
-
-        if (self.history) {
-          self.history = self.history
-            .take(++self._currentRevision)
-            .push(self.current);
-        }
-        return self.current;
-      })
-    )
-  );
+  changeListener = handleHistory(this, changeListener);
+  changeListener = handleUpdate(this, changeListener);
+  changeListener = handlePersisting(this, changeListener);
+  return Cursor.from(self.current, path, changeListener);
 };
 
 Structure.prototype.forceHasSwapped = function (newData, oldData) {
@@ -102,6 +96,19 @@ var possiblyEmitAnimationFrameEvent = (function () {
     });
   };
 }());
+
+function handleHistory (emitter, fn) {
+  return function (newData, oldData, path) {
+    var newStructure = fn.apply(fn, arguments);
+    if (!emitter.history) return newStructure;
+
+    emitter.history = emitter.history
+      .take(++emitter._currentRevision)
+      .push(emitter.current);
+
+    return newStructure;
+  };
+}
 
 function handleUpdate (emitter, fn) {
   return function (newData, oldData, path) {
