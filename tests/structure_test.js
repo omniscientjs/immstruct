@@ -97,21 +97,41 @@ describe('immstruct', function () {
     cursor.deref().should.equal('bar');
   });
 
-  it('should accept existing immutable structures', function () {
-    var immutableObj = Immutable.fromJS({
-      foo: 'hello'
+  describe('existing immutable structure', function () {
+
+    it('should accept existing immutable maps', function () {
+      var immutableObj = Immutable.fromJS({
+        foo: 'hello'
+      });
+
+      var structure = new Structure({
+        data: immutableObj
+      });
+
+      var cursor = structure.cursor(['foo']);
+      cursor.deref().should.equal('hello');
+      cursor = cursor.update(function () {
+        return 'bar';
+      });
+      cursor.deref().should.equal('bar');
     });
 
-    var structure = new Structure({
-      data: immutableObj
+    it('should accept existing immutable list', function () {
+      var immutableObj = Immutable.List.of('hello');
+
+      var structure = new Structure({
+        data: immutableObj
+      });
+
+      var cursor = structure.cursor(['0']);
+
+      cursor.deref().should.equal('hello');
+      cursor = cursor.update(function () {
+        return 'bar';
+      });
+      cursor.deref().should.equal('bar');
     });
 
-    var cursor = structure.cursor(['foo']);
-    cursor.deref().should.equal('hello');
-    cursor = cursor.update(function () {
-      return 'bar';
-    });
-    cursor.deref().should.equal('bar');
   });
 
   describe('undo/redo', function () {

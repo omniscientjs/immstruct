@@ -13,11 +13,10 @@ function Structure (options) {
 
   this.key = options.key || utils.randString();
 
-  if (options.data instanceof Immutable.Seq ||
-      options.data instanceof Immutable.Map)
-    this.current = options.data;
-  else
-    this.current = Immutable.fromJS(options.data || {});
+  this.current = options.data;
+  if (!isImmutableStructure(this.current) || !this.current) {
+    this.current = Immutable.fromJS(this.current || {});
+  }
 
   if (!!options.history) {
     this.history = Immutable.List.of(this.current);
@@ -137,6 +136,22 @@ function handlePersisting (emitter, fn) {
 
     return fn.apply(fn, arguments);
   };
+}
+
+// Check if passed structure is existing immutable structure.
+// From https://github.com/facebook/immutable-js/wiki/Upgrading-to-Immutable-v3#additional-changes
+function isImmutableStructure (data) {
+  return immutableSafeCheck('Iterable', 'isIterable', data) ||
+          immutableSafeCheck('Seq', 'isSeq', data) ||
+          immutableSafeCheck('Map', 'isMap', data) ||
+          immutableSafeCheck('OrderedMap', 'isOrderedMap', data) ||
+          immutableSafeCheck('List', 'isList', data) ||
+          immutableSafeCheck('Stack', 'isStack', data) ||
+          immutableSafeCheck('Set', 'isSet', data);
+}
+
+function immutableSafeCheck (ns, method, data) {
+  return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
 }
 
 function revisionWarn () {
