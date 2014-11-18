@@ -5,25 +5,23 @@ A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/maste
 are updated. Handy for usage with immutable pure components for views,
 like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
-## Example
+## Usage
 
 ```js
 // someFile.js
-var structure = require('immstruct')('myKey', { a: { b: { c: 1 } } });
+var immstruct = require('immstruct');
+var structure = immstruct('myKey', { a: { b: { c: 1 } } });
 
 // Use event `swap` or `next-animation-frame`
 structure.on('swap', function (newStructure, oldStructure) {
-  console.log('Render new components');
+  console.log('Subpart of structure swapped.');
+  console.log('New structure:', newStructure.toJSON());
+
   // e.g. with usage with React
-  // React.renderComponent(
-  //   App({
-  //      cursor: structure.current()
-  //   }),
-  //   document.querySelector('body')
-  // );
+  // React.render(App({ cursor: structure.current() }), document.body);
 });
 
-// Remember: is immutable. Update cursor.
+// Remember: Cursor is immutable. Update cursor.
 var cursor = structure.cursor(['a', 'b', 'c']).update(function (x) {
   return x + 1;
 });
@@ -44,6 +42,23 @@ cursor = cursor.update(function (x) {
 // Will trigger `swap` in somefile.js
 
 console.log(cursor.deref()); //=> 3
+```
+
+## Usage Undo/Redo
+
+```js
+var structure = immstruct.withHistory({ 'foo': 'bar' });
+console.log(structure.cursor('foo').deref()); //=> 'bar'
+
+structure.cursor('foo').update(function () { return 'hello'; });
+console.log(structure.cursor('foo').deref()); //=> 'hello'
+
+structure.undo();
+console.log(structure.cursor('foo').deref()); //=> 'bar'
+
+structure.redo();
+console.log(structure.cursor('foo').deref()); //=> 'hello'
+
 ```
 
 ## API
@@ -121,6 +136,33 @@ directly, as this won't add event handlers for when the cursor is updated.
 
 Force triggers the swap events. Useful when you want to force re-render
 design components or view layers.
+
+
+### With History
+
+Instantiate structure using `withHistory` instead of default constructor:
+
+```
+var structure = immstruct.withHistory({ 'foo': 'bar' });
+```
+
+Same signature as normal constructor:
+
+```
+immstruct.withHistory([name : String][jsStructure : Object]) : Structure
+```
+
+#### `Structure#undo(steps: int) : Structure`
+
+Undo number of steps. Step defaults to one step. Returns structure.
+
+#### `Structure#undoUntil(obj: Structure) : Structure`
+
+Undo number until structure passed as argument. Returns structure.
+
+#### `Structure#redo(steps: int) : Structure`
+
+Redo number of steps. Step defaults to one step. Returns structure.
 
 ### Structure Events
 
