@@ -50,7 +50,7 @@ console.log(cursor.deref()); //=> 3
 var structure = immstruct.withHistory({ 'foo': 'bar' });
 console.log(structure.cursor('foo').deref()); //=> 'bar'
 
-structure.cursor('foo').update(function () { return 'hello'; });
+structure.cursor('foo').update(function () { return 'hello'; });
 console.log(structure.cursor('foo').deref()); //=> 'hello'
 
 structure.undo();
@@ -96,6 +96,19 @@ var randomGeneratedKey = structure.key;
 // Create new empty structure with random key
 ```
 
+#### Methods and accessers
+
+##### `immstruct.clear()`
+
+Removes all instances.
+
+##### `immstruct.remove(name : String) : bool`
+
+Removes specified instance. Returns result of the delete operation.
+
+##### `immstruct.instances : Structure[]`
+
+Access the instances internals.
 
 ### `Structure : EventEmitter`
 
