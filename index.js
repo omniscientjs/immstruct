@@ -36,6 +36,6 @@ module.exports.clear = function () {
   instances = {};
 };
 
-module.exports.delete = function (key) {
+module.exports.remove = function (key) {
   return delete instances[key];
 };
