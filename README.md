@@ -98,15 +98,15 @@ var randomGeneratedKey = structure.key;
 
 #### Methods and accessers
 
-##### `immstruct.clear()`
+##### `immstruct#clear()`
 
 Removes all instances.
 
-##### `immstruct.remove(name : String) : bool`
+##### `immstruct#remove(name : String) : bool`
 
 Removes specified instance. Returns result of the delete operation.
 
-##### `immstruct.instances : Structure[]`
+##### `immstruct#instances : Structure[]`
 
 Access the instances internals.
 
