@@ -65,4 +65,9 @@ describe('immstruct', function () {
     immstruct('customKey').current.toJS().should.not.have.property('foo');
   });
 
+  it('should expose the instances internals', function () {
+    immstruct('customKey', { 'foo': 'hello' });
+    immstruct.instances['customKey'].current.toJS().should.have.property('foo');
+  });
+
 })

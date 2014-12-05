@@ -1,13 +1,13 @@
 var Structure = require('./src/structure');
 
-var instances = {};
-
 module.exports = function (key, data) {
   return getInstance({
     key: key,
     data: data
   });
 };
+
+module.exports.instances = {};
 
 module.exports.withHistory = function (key, data) {
   return getInstance({
@@ -23,19 +23,19 @@ function getInstance (options) {
     options.key = void 0;
   }
 
-  if (options.key && instances[options.key]) {
-    return instances[options.key];
+  if (options.key && module.exports.instances[options.key]) {
+    return module.exports.instances[options.key];
   }
 
   var newInstance = new Structure(options);
-  instances[newInstance.key] = newInstance;
+  module.exports.instances[newInstance.key] = newInstance;
   return newInstance;
 }
 
 module.exports.clear = function () {
-  instances = {};
+  module.exports.instances = {};
 };
 
 module.exports.remove = function (key) {
-  return delete instances[key];
+  return delete module.exports.instances[key];
 };
