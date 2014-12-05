@@ -58,4 +58,11 @@ describe('immstruct', function () {
     immstruct('customKey').current.toJS().should.not.have.property('foo');
   });
 
+  it('should delete structure', function () {
+    immstruct('customKey', { 'foo': 'hello' });
+    immstruct('customKey').current.toJS().should.have.property('foo');
+    immstruct.delete('customKey').should.equal(true);
+    immstruct('customKey').current.toJS().should.not.have.property('foo');
+  });
+
 })

@@ -35,3 +35,7 @@ function getInstance (options) {
 module.exports.clear = function () {
   instances = {};
 };
+
+module.exports.delete = function (key) {
+  return delete instances[key];
+};
