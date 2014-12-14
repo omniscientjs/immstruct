@@ -143,6 +143,7 @@ function handleSwap (emitter, fn) {
 // Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
+    var newStructure = fn.apply(fn, arguments);
     var oldObject = oldData && oldData.getIn(path);
     var newObject = newData && newData.getIn(path);
 
@@ -156,8 +157,7 @@ function handlePersisting (emitter, fn) {
     } else if (newObject) {
       emitter.emit('add', path, newObject);
     }
-
-    return fn.apply(fn, arguments);
+    return newStructure;
   };
 }
 
