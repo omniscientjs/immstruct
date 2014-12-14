@@ -47,8 +47,11 @@ Structure.prototype.cursor = function (path) {
   }
 
   var changeListener = function (newRoot, oldRoot, path) {
-    var newValue = newRoot.getIn(path);
-    if(newValue === void 0) {
+
+    var inNew = pathExists(newRoot, path);
+    var inOld = pathExists(oldRoot, path);
+
+    if(!inNew && inOld) {
       return self.current = newRoot;
     }
     return self.current = self.current.updateIn(path, function (data) {
@@ -140,21 +143,32 @@ function handleSwap (emitter, fn) {
   };
 }
 
+function pathExists(cursor, path) {
+  var notSetValue = true;
+
+  if(cursor.getIn(path)) {
+    return true;
+  }
+
+  return !(cursor.getIn(path, notSetValue) === notSetValue);
+}
+
 // Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
+
     var oldObject = oldData && oldData.getIn(path);
     var newObject = newData && newData.getIn(path);
 
-    var inOld = !!oldObject;
-    var inNew = !!newObject;
+    var inOld = oldData && pathExists(oldData, path);
+    var inNew = newData && pathExists(newData, path);
 
-    if (inOld && !inNew && oldObject) {
+    if (inOld && !inNew) {
       emitter.emit('delete', path, oldObject);
-    } else if (inOld && inNew && oldObject && newObject) {
+    } else if (inOld && inNew) {
       emitter.emit('change', path, newObject, oldObject);
-    } else if (newObject) {
+    } else if (!inOld && inNew) {
       emitter.emit('add', path, newObject);
     }
     return newStructure;

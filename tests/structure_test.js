@@ -1,4 +1,5 @@
 var chai = require('chai');
+var expect = chai.expect;
 chai.should();
 
 var Immutable = require('immutable');
@@ -96,7 +97,45 @@ describe('structure', function () {
     });
   });
 
-  it('should trigger add with data when existing property is added', function (done) {
+  it('should trigger change with data when existing property is changed to falsey value', function (done) {
+    var structure = new Structure({
+      data: { 'foo': true }
+    });
+    var i = 0;
+    structure.on('change', function (path, newValue, oldValue) {
+      path.should.eql(['foo']);
+      switch(i) {
+        case 0:
+          oldValue.should.equal(true);
+          expect(newValue).to.be.undefined();
+          break;
+        case 1:
+          expect(oldValue).to.be.undefined();
+          expect(newValue).to.be.false();
+          break;
+        case 2:
+          expect(oldValue).to.be.false();
+          expect(newValue).to.be.null();
+          done();
+          break;
+      }
+      i++;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return void 0;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return false;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return null;
+    });
+  });
+
+  it('should trigger add with data when a new property is added', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
     });
@@ -137,6 +176,42 @@ describe('structure', function () {
       return Immutable.fromJS({
           foo: 'bar'
       });
+    });
+  });
+
+  it('should trigger add with data when a new property added is a falsey value', function (done) {
+    var structure = new Structure({
+      data: { 'foo': 'hello' }
+    });
+    var i = 1;
+    structure.on('add', function (path, newValue) {
+      path.should.eql([i+'']);
+      switch(i) {
+        case 1:
+          expect(newValue).to.be.false();
+          break;
+        case 2:
+          expect(newValue).to.be.null();
+          break;
+        case 3:
+          expect(newValue).to.be.undefined();
+          done();
+          break;
+      }
+      i++;
+    });
+
+    structure.cursor(['1']).update(function () {
+      return false;
+    });
+
+    structure.cursor(['2']).update(function () {
+      return null;
+    });
+
+    // See: https://github.com/facebook/immutable-js/issues/245
+    structure.cursor().update('3', true, function () {
+      return void 0;
     });
   });
 
