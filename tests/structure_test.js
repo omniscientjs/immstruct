@@ -14,6 +14,7 @@ describe('structure', function () {
     structure.on('swap', function (newData, oldData) {
       newData.toJS().should.eql({'foo': 'bar'});
       oldData.toJS().should.eql({'foo': 'hello'});
+      structure.cursor().toJS().should.eql({ 'foo': 'bar' });
       done();
     });
 
@@ -29,7 +30,14 @@ describe('structure', function () {
     var i = 0;
     structure.on('swap', function (newData, oldData) {
       i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ 'foo': 'bar' });
+        oldData.toJS().should.eql({ 'foo': 'hello' });
+        structure.cursor().toJS().should.eql({ 'foo': 'bar' });
+      }
       if(i == 2) {
+        newData.toJS().should.eql({ 'foo': 'bar', 'bar': 'world' });
+        oldData.toJS().should.eql({ 'foo': 'bar' });
         structure.cursor().toJS().should.eql({'foo': 'bar', 'bar': 'world'});
         done();
       }
@@ -61,15 +69,14 @@ describe('structure', function () {
       path.should.eql(['foo']);
       oldValue.should.equal('hello');
       newValue.should.equal('bar');
+      structure.current.toJS().should.eql({
+        foo: 'bar'
+      });
       done();
     });
 
     structure.cursor(['foo']).update(function () {
       return 'bar';
-    });
-
-    structure.current.toJS().should.eql({
-      foo: 'bar'
     });
   });
 
@@ -80,12 +87,21 @@ describe('structure', function () {
     var i = 0;
     structure.on('swap', function (newData, oldData) {
       i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar' } });
+        oldData.toJS().should.eql({ subtree: {} });
+      }
       if(i == 2) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
+        oldData.toJS().should.eql({ subtree: { foo: 'bar' } });
         structure.cursor().toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
         done();
       }
     });
     structure.once('change', function (path, newValue, oldValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({ foo: 'bar' });
+      oldValue.toJS().should.eql({});
       structure.cursor('subtree').update('hello',function() {
         return 'world';
       });
@@ -143,15 +159,15 @@ describe('structure', function () {
     structure.on('add', function (path, newValue) {
       path.should.eql(['bar']);
       newValue.should.equal('baz');
+      structure.current.toJS().should.eql({
+        foo: 'hello',
+        bar: 'baz'
+      });
       done();
     });
 
     structure.cursor(['bar']).update(function (state) {
       return 'baz';
-    });
-    structure.current.toJS().should.eql({
-      foo: 'hello',
-      bar: 'baz'
     });
   });
 
@@ -162,12 +178,20 @@ describe('structure', function () {
     var i = 0;
     structure.on('swap', function (newData, oldData) {
       i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar' } });
+        oldData.toJS().should.eql({});
+        structure.cursor().toJS().should.eql({ subtree: { foo: 'bar' } });
+      }
       if(i == 2) {
         structure.cursor().toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
         done();
       }
     });
     structure.once('add', function (path, newValue, oldValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({ foo: 'bar' });
+      expect(oldValue).to.be.undefined();
       structure.cursor('subtree').update('hello',function() {
         return 'world';
       });
@@ -220,14 +244,11 @@ describe('structure', function () {
       data: { 'foo': 'hello', 'bar': 'world' }
     });
 
-    structure.on('swap', function() {
-      structure.cursor().toJS().should.eql({ 'bar': 'world' });
-      done();
-    });
-
     structure.on('delete', function (path, oldValue) {
       path.should.eql(['foo']);
       oldValue.should.equal('hello');
+      structure.cursor().toJS().should.eql({ 'bar': 'world' });
+      done();
     });
 
     structure.cursor().remove('foo');
@@ -235,17 +256,25 @@ describe('structure', function () {
 
   it('should set correct structure when modifying it during a delete event', function (done) {
     var structure = new Structure({
-      data: { 'subtree': { } }
+      data: { 'subtree': {} }
     });
     var i = 0;
     structure.on('swap', function (newData, oldData) {
       i++;
+      if(i == 1) {
+        newData.toJS().should.eql({});
+        oldData.toJS().should.eql({ subtree: {} });
+      }
       if(i == 2) {
+        newData.toJS().should.eql({ subtree: { hello: 'world'} });
+        oldData.toJS().should.eql({});
         structure.cursor().toJS().should.eql({ subtree: { hello: 'world' } });
         done();
       }
     });
-    structure.once('delete', function (path, newValue, oldValue) {
+    structure.once('delete', function (path, newValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({});
       structure.cursor('subtree').update('hello',function() {
         return 'world';
       });
