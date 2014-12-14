@@ -46,9 +46,13 @@ Structure.prototype.cursor = function (path) {
     throw new Error('No structure loaded.');
   }
 
-  var changeListener = function (newData, oldData, path) {
+  var changeListener = function (newRoot, oldRoot, path) {
+    var newValue = newRoot.getIn(path);
+    if(newValue === void 0) {
+      return self.current = newRoot;
+    }
     return self.current = self.current.updateIn(path, function (data) {
-      return newData.getIn(path);
+      return newRoot.getIn(path);
     });
   };
 

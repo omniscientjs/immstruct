@@ -72,16 +72,20 @@ describe('immstruct', function () {
 
   it('should trigger delete with data when existing property is removed', function (done) {
     var structure = new Structure({
-      data: { 'foo': 'hello' }
+      data: { 'foo': 'hello', 'bar': 'world' }
+    });
+
+    structure.on('swap', function() {
+      structure.cursor().toJS().should.eql({ 'bar': 'world' });
+      done();
     });
 
     structure.on('delete', function (path, oldValue) {
       path.should.eql(['foo']);
       oldValue.should.equal('hello');
-      done();
     });
 
-    structure.cursor().remove('foo').toJS().should.eql({});
+    structure.cursor().remove('foo');
   });
 
   it('should expose immutable.js cursor', function () {
