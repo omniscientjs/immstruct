@@ -1,10 +1,11 @@
 var chai = require('chai');
+var expect = chai.expect;
 chai.should();
 
 var Immutable = require('immutable');
 var Structure = require('../src/structure');
 
-describe('immstruct', function () {
+describe('structure', function () {
 
   it('should trigger swap when structure is changed with new and old data', function (done) {
     var structure = new Structure({
@@ -13,9 +14,39 @@ describe('immstruct', function () {
     structure.on('swap', function (newData, oldData) {
       newData.toJS().should.eql({'foo': 'bar'});
       oldData.toJS().should.eql({'foo': 'hello'});
+      structure.cursor().toJS().should.eql({ 'foo': 'bar' });
       done();
     });
 
+    structure.cursor(['foo']).update(function () {
+      return 'bar';
+    });
+  });
+
+  it('should set correct structure when modifying it during a swap event', function (done) {
+    var structure = new Structure({
+      data: { 'foo': 'hello' }
+    });
+    var i = 0;
+    structure.on('swap', function (newData, oldData) {
+      i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ 'foo': 'bar' });
+        oldData.toJS().should.eql({ 'foo': 'hello' });
+        structure.cursor().toJS().should.eql({ 'foo': 'bar' });
+      }
+      if(i == 2) {
+        newData.toJS().should.eql({ 'foo': 'bar', 'bar': 'world' });
+        oldData.toJS().should.eql({ 'foo': 'bar' });
+        structure.cursor().toJS().should.eql({'foo': 'bar', 'bar': 'world'});
+        done();
+      }
+    });
+    structure.once('swap', function (newData, oldData) {
+      structure.cursor('bar').update(function() {
+        return 'world';
+      });
+    });
     structure.cursor(['foo']).update(function () {
       return 'bar';
     });
@@ -38,19 +69,89 @@ describe('immstruct', function () {
       path.should.eql(['foo']);
       oldValue.should.equal('hello');
       newValue.should.equal('bar');
+      structure.current.toJS().should.eql({
+        foo: 'bar'
+      });
       done();
     });
 
     structure.cursor(['foo']).update(function () {
       return 'bar';
     });
+  });
 
-    structure.current.toJS().should.eql({
-      foo: 'bar'
+  it('should set correct structure when modifying it during a change event', function (done) {
+    var structure = new Structure({
+      data: { 'subtree': {} }
+    });
+    var i = 0;
+    structure.on('swap', function (newData, oldData) {
+      i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar' } });
+        oldData.toJS().should.eql({ subtree: {} });
+      }
+      if(i == 2) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
+        oldData.toJS().should.eql({ subtree: { foo: 'bar' } });
+        structure.cursor().toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
+        done();
+      }
+    });
+    structure.once('change', function (path, newValue, oldValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({ foo: 'bar' });
+      oldValue.toJS().should.eql({});
+      structure.cursor('subtree').update('hello',function() {
+        return 'world';
+      });
+    });
+    structure.cursor().update('subtree', function () {
+      return Immutable.fromJS({
+          foo: 'bar'
+      });
     });
   });
 
-  it('should trigger add with data when existing property is added', function (done) {
+  it('should trigger change with data when existing property is changed to falsey value', function (done) {
+    var structure = new Structure({
+      data: { 'foo': true }
+    });
+    var i = 0;
+    structure.on('change', function (path, newValue, oldValue) {
+      path.should.eql(['foo']);
+      switch(i) {
+        case 0:
+          oldValue.should.equal(true);
+          expect(newValue).to.be.undefined();
+          break;
+        case 1:
+          expect(oldValue).to.be.undefined();
+          expect(newValue).to.be.false();
+          break;
+        case 2:
+          expect(oldValue).to.be.false();
+          expect(newValue).to.be.null();
+          done();
+          break;
+      }
+      i++;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return void 0;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return false;
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return null;
+    });
+  });
+
+  it('should trigger add with data when a new property is added', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
     });
@@ -58,30 +159,127 @@ describe('immstruct', function () {
     structure.on('add', function (path, newValue) {
       path.should.eql(['bar']);
       newValue.should.equal('baz');
+      structure.current.toJS().should.eql({
+        foo: 'hello',
+        bar: 'baz'
+      });
       done();
     });
 
     structure.cursor(['bar']).update(function (state) {
       return 'baz';
     });
-    structure.current.toJS().should.eql({
-      foo: 'hello',
-      bar: 'baz'
+  });
+
+  it('should set correct structure when modifying it during an add event', function (done) {
+    var structure = new Structure({
+      data: { }
+    });
+    var i = 0;
+    structure.on('swap', function (newData, oldData) {
+      i++;
+      if(i == 1) {
+        newData.toJS().should.eql({ subtree: { foo: 'bar' } });
+        oldData.toJS().should.eql({});
+        structure.cursor().toJS().should.eql({ subtree: { foo: 'bar' } });
+      }
+      if(i == 2) {
+        structure.cursor().toJS().should.eql({ subtree: { foo: 'bar', hello: 'world' } });
+        done();
+      }
+    });
+    structure.once('add', function (path, newValue, oldValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({ foo: 'bar' });
+      expect(oldValue).to.be.undefined();
+      structure.cursor('subtree').update('hello',function() {
+        return 'world';
+      });
+    });
+    structure.cursor().update('subtree', function () {
+      return Immutable.fromJS({
+          foo: 'bar'
+      });
+    });
+  });
+
+  it('should trigger add with data when a new property added is a falsey value', function (done) {
+    var structure = new Structure({
+      data: { 'foo': 'hello' }
+    });
+    var i = 1;
+    structure.on('add', function (path, newValue) {
+      path.should.eql([i+'']);
+      switch(i) {
+        case 1:
+          expect(newValue).to.be.false();
+          break;
+        case 2:
+          expect(newValue).to.be.null();
+          break;
+        case 3:
+          expect(newValue).to.be.undefined();
+          done();
+          break;
+      }
+      i++;
+    });
+
+    structure.cursor(['1']).update(function () {
+      return false;
+    });
+
+    structure.cursor(['2']).update(function () {
+      return null;
+    });
+
+    // See: https://github.com/facebook/immutable-js/issues/245
+    structure.cursor().update('3', true, function () {
+      return void 0;
     });
   });
 
   it('should trigger delete with data when existing property is removed', function (done) {
     var structure = new Structure({
-      data: { 'foo': 'hello' }
+      data: { 'foo': 'hello', 'bar': 'world' }
     });
 
     structure.on('delete', function (path, oldValue) {
       path.should.eql(['foo']);
       oldValue.should.equal('hello');
+      structure.cursor().toJS().should.eql({ 'bar': 'world' });
       done();
     });
 
-    structure.cursor().remove('foo').toJS().should.eql({});
+    structure.cursor().remove('foo');
+  });
+
+  it('should set correct structure when modifying it during a delete event', function (done) {
+    var structure = new Structure({
+      data: { 'subtree': {} }
+    });
+    var i = 0;
+    structure.on('swap', function (newData, oldData) {
+      i++;
+      if(i == 1) {
+        newData.toJS().should.eql({});
+        oldData.toJS().should.eql({ subtree: {} });
+      }
+      if(i == 2) {
+        newData.toJS().should.eql({ subtree: { hello: 'world'} });
+        oldData.toJS().should.eql({});
+        structure.cursor().toJS().should.eql({ subtree: { hello: 'world' } });
+        done();
+      }
+    });
+    structure.once('delete', function (path, newValue) {
+      path.should.eql(['subtree']);
+      newValue.toJS().should.eql({});
+      structure.cursor('subtree').update('hello',function() {
+        return 'world';
+      });
+    });
+    structure.cursor().delete('subtree');
   });
 
   it('should expose immutable.js cursor', function () {
