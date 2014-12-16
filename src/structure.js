@@ -48,12 +48,13 @@ Structure.prototype.cursor = function (path) {
 
   var changeListener = function (newRoot, oldRoot, path) {
 
-    var inNew = pathExists(newRoot, path);
-    var inOld = pathExists(oldRoot, path);
+    var inNew = hasIn(newRoot, path);
+    var inOld = hasIn(oldRoot, path);
 
     if(!inNew && inOld) {
       return self.current = newRoot;
     }
+
     return self.current = self.current.updateIn(path, function (data) {
       return newRoot.getIn(path);
     });
@@ -143,16 +144,6 @@ function handleSwap (emitter, fn) {
   };
 }
 
-function pathExists(cursor, path) {
-  var notSetValue = true;
-
-  if(cursor.getIn(path)) {
-    return true;
-  }
-
-  return !(cursor.getIn(path, notSetValue) === notSetValue);
-}
-
 // Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
@@ -161,8 +152,8 @@ function handlePersisting (emitter, fn) {
     var oldObject = oldData && oldData.getIn(path);
     var newObject = newData && newData.getIn(path);
 
-    var inOld = oldData && pathExists(oldData, path);
-    var inNew = newData && pathExists(newData, path);
+    var inOld = oldData && hasIn(oldData, path);
+    var inNew = newData && hasIn(newData, path);
 
     if (inOld && !inNew) {
       emitter.emit('delete', path, oldObject);
@@ -178,6 +169,17 @@ function handlePersisting (emitter, fn) {
 /************************************
  * Private helpers.
  ***********************************/
+
+// Check if path exists.
+function hasIn(cursor, path) {
+ var notSetValue = true;
+
+ if(cursor.getIn(path)) {
+   return true;
+ }
+
+ return cursor.getIn(path, notSetValue) !== notSetValue;
+}
 
 // Check if passed structure is existing immutable structure.
 // From https://github.com/facebook/immutable-js/wiki/Upgrading-to-Immutable-v3#additional-changes
