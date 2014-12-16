@@ -233,10 +233,7 @@ describe('structure', function () {
       return null;
     });
 
-    // See: https://github.com/facebook/immutable-js/issues/245
-    structure.cursor().update('3', true, function () {
-      return void 0;
-    });
+    structure.cursor().set('3', void 0);
   });
 
   it('should trigger delete with data when existing property is removed', function (done) {
