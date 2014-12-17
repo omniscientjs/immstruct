@@ -151,6 +151,40 @@ describe('structure', function () {
     });
   });
 
+  it('should resync immutable collection when a stale cursor changed existing property', function() {
+
+    var struct = new Structure({
+      data: { foo: 42, bar: 24 }
+    });
+
+    var foo = struct.cursor('foo');
+    var bar = struct.cursor('bar');
+    var original = struct.current;
+
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.equal(oldRoot);
+        foo._rootData.should.equal(original);
+    });
+
+    foo.update(function(val) {
+      return val + 1;
+    });
+    struct.current.toJS().should.eql({ foo: 43, bar: 24 });
+
+    original = struct.current;
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.not.equal(oldRoot);
+        bar._rootData.should.not.equal(original);
+        bar._rootData.should.equal(oldRoot);
+    });
+
+    bar.update(function(val) {
+        return val + 1;
+    });
+
+    struct.current.toJS().should.eql({ foo: 43, bar: 25 });
+  });
+
   it('should trigger add with data when a new property is added', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
@@ -236,6 +270,40 @@ describe('structure', function () {
     structure.cursor().set('3', void 0);
   });
 
+  it('should resync immutable collection when a stale cursor adds new property', function() {
+
+    var struct = new Structure({
+      data: { foo: {}, bar: {} }
+    });
+
+    var foo = struct.cursor('foo');
+    var bar = struct.cursor('bar');
+    var original = struct.current;
+
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.equal(oldRoot);
+        foo._rootData.should.equal(original);
+    });
+
+    foo.update('a', function() {
+      return 42;
+    });
+    struct.current.toJS().should.eql({ foo: {a: 42}, bar: {} });
+
+    original = struct.current;
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.not.equal(oldRoot);
+        bar._rootData.should.not.equal(original);
+        bar._rootData.should.equal(oldRoot);
+    });
+
+    bar.update('b', function(val) {
+        return 24;
+    });
+
+    struct.current.toJS().should.eql({ foo: {a: 42}, bar: {b: 24} });
+  });
+
   it('should trigger delete with data when existing property is removed', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello', 'bar': 'world' }
@@ -277,6 +345,36 @@ describe('structure', function () {
       });
     });
     structure.cursor().delete('subtree');
+  });
+
+  it('should resync immutable collection when a stale cursor deletes existing property', function() {
+
+    var struct = new Structure({
+      data: { foo: { a: 42 }, bar: { b: 24 } }
+    });
+
+    var foo = struct.cursor('foo');
+    var bar = struct.cursor('bar');
+    var original = struct.current;
+
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.equal(oldRoot);
+        foo._rootData.should.equal(original);
+    });
+
+    foo.delete('a');
+    struct.current.toJS().should.eql({ foo: {}, bar: {b: 24} });
+
+    original = struct.current;
+    struct.once('swap', function(newRoot, oldRoot) {
+        original.should.not.equal(oldRoot);
+        bar._rootData.should.not.equal(original);
+        bar._rootData.should.equal(oldRoot);
+    });
+
+    bar.delete('b');
+
+    struct.current.toJS().should.eql({ foo: {}, bar: {} });
   });
 
   it('should expose immutable.js cursor', function () {
