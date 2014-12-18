@@ -173,7 +173,8 @@ function handlePersisting (emitter, fn) {
 // Check if path exists.
 var NOT_SET = {};
 function hasIn(cursor, path) {
- return cursor.getIn(path, NOT_SET) !== NOT_SET;
+  if(cursor.hasIn) return cursor.hasIn(path);
+  return cursor.getIn(path, NOT_SET) !== NOT_SET;
 }
 
 // Check if passed structure is existing immutable structure.
