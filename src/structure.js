@@ -21,7 +21,7 @@ function Structure (options) {
     return new Structure(options);
   }
 
-  this.key = options.key || utils.randString();
+  this.key = options.key || utils.generateRandomKey();
 
   this.current = options.data;
   if (!isImmutableStructure(this.current) || !this.current) {
