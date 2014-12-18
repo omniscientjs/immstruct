@@ -112,9 +112,21 @@ Access the instances internals.
 
 ### `Structure : EventEmitter`
 
-A structure is the a wrapped Immutable.js structure. You can access the inner
-structure by calling `myStructure.current`. A structure is an event emitter.
-See [events](#structure-events)
+You can create a bare-bone `Structure` without using the instance management
+of the `immstruct` function call. Require the structure directly:
+
+```js
+var Structure = require('immstruct/structure');
+var s = new Structure({
+  key: 'foo', // default random string
+  data: someObject, // default empty object
+  withHistory: true // default `false`
+})
+```
+
+A structure is the a wrapped Immutable.js instance. You can access the inner
+immutable data by calling `myStructure.current`. A structure is an
+event emitter. See [events](#structure-events)
 
 #### `Structure#key : String`
 Returns the access key for structure. Can be used to get the instance by using
