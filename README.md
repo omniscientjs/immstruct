@@ -199,6 +199,8 @@ A Structure object is an event emitter and emits the following events:
 * `delete`: Emitted when data/value is removed. Emits value: `path` and `removedValue`.
 * `add`: Emitted when new data/value is added. Emits value: `path` and `newValue`.
 
+**NOTE:** If you update cursors via `Cursor.update` or `Cursor.set`, and if the underlying Immutable collection is not inherently changed, `swap` and `changed` events will not be emitted, neither will the history (if any) be applied.
+
 [See tests for event examples](./tests/structure_test.js)
 
 [npm-url]: https://npmjs.org/package/immstruct
