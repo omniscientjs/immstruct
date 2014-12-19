@@ -9,7 +9,7 @@ var utils = require('./utils');
  * ## Public API.
  *   Constructor({ history: bool, key: string, data: structure|object })
  *   .cursor(path)
- *   .forceHasSwapped(newData, oldData)
+ *   .forceHasSwapped(newData, oldData, keyPath)
  *   .undo(steps)
  *   .redo(steps)
  *   .undoUntil(structure)
@@ -75,8 +75,8 @@ Structure.prototype.cursor = function (path) {
   return Cursor.from(self.current, path, changeListener);
 };
 
-Structure.prototype.forceHasSwapped = function (newData, oldData) {
-  this.emit('swap', newData || this.current, oldData);
+Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
+  this.emit('swap', newData || this.current, oldData, keyPath);
 };
 
 Structure.prototype.undo = function(back) {
@@ -145,12 +145,12 @@ var possiblyEmitAnimationFrameEvent = (function () {
 
 // Emit swap event on values are swapped
 function handleSwap (emitter, fn) {
-  return function (newData, oldData, path) {
+  return function (newData, oldData, keyPath) {
     var newStructure = fn.apply(fn, arguments);
     if(newData === oldData) return newStructure;
 
-    emitter.emit('swap', newStructure, oldData);
-    possiblyEmitAnimationFrameEvent(emitter, newStructure, oldData);
+    emitter.emit('swap', newStructure, oldData, keyPath);
+    possiblyEmitAnimationFrameEvent(emitter, newStructure, oldData, keyPath);
 
     return newStructure;
   };
