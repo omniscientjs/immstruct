@@ -352,14 +352,14 @@ describe('structure', function () {
       current.toJS().should.not.eql(newRoot.toJS());
       newRoot.toJS().should.not.eql(oldRoot.toJS());
 
-      newRoot.toJS().should.eql({ foo: {a: 42}, bar: {b: undefined} });
+      newRoot.toJS().should.eql({ foo: {a: 42}, bar: { b: "hello" } });
     });
     // This test case demonstrates the distinction between
     // .setIn(path, newRoot.getIn(path)) and
     // .updateIn(path, () => newRoot.getIn(path))
-    bar.set('b', void 0);
+    bar.set('b', "hello");
 
-    struct.current.toJS().should.eql({ foo: {a: 42}, bar: {b: undefined} });
+    struct.current.toJS().should.eql({ foo: {a: 42}, bar: { b: "hello" } });
   });
 
   it('should trigger delete with data when existing property is removed', function (done) {
