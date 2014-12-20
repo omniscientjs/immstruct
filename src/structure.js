@@ -48,11 +48,20 @@ Structure.prototype.cursor = function (path) {
 
   var changeListener = function (newRoot, oldRoot, path) {
 
+    if(self.current === oldRoot) {
+      return self.current = newRoot;
+    }
+    // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
+    // changes at path `path`, and sync this to `self.current`.
+
     var inNew = hasIn(newRoot, path);
-    var inOld = hasIn(oldRoot, path);
+    var inOld = hasIn(self.current, path);
 
     if(!inNew && inOld) {
-      return self.current = newRoot;
+      return self.current = self.current.removeIn(path);
+    }
+    if(inNew && !inOld) {
+      return self.current = self.current.setIn(path, newRoot.getIn(path));
     }
 
     return self.current = self.current.updateIn(path, function (data) {
