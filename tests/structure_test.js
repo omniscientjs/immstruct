@@ -23,6 +23,34 @@ describe('structure', function () {
     });
   });
 
+  it('should trigger swap with keyPath', function (done) {
+    var structure = new Structure({
+      data: { 'foo': 'hello' }
+    });
+
+    structure.on('swap', function (newData, oldData, keyPath) {
+      keyPath.should.eql(['foo']);
+      done();
+    });
+
+    structure.cursor(['foo']).update(function () {
+      return 'bar';
+    });
+  });
+
+  it('should trigger swap with keyPath on forceHasSwapped', function (done) {
+    var structure = new Structure({
+      data: { 'foo': 'hello' }
+    });
+
+    structure.on('swap', function (newData, oldData, keyPath) {
+      keyPath.should.eql(['foo']);
+      done();
+    });
+
+    structure.forceHasSwapped(structure.current, structure.current, ['foo'])
+  });
+
   it('should set correct structure when modifying it during a swap event', function (done) {
     var structure = new Structure({
       data: { 'foo': 'hello' }
