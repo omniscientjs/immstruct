@@ -495,7 +495,7 @@ describe('structure', function () {
 
   });
 
-  describe('undo/redo', function () {
+  describe('undo/redo', function () {
 
     it('should be able to undo default', function () {
       var structure = new Structure({
@@ -503,11 +503,11 @@ describe('structure', function () {
         history: true
       });
 
-      structure.cursor('foo').update(function () { return 'hello'; });
+      structure.cursor('foo').update(function () { return 'hello'; });
       structure.cursor('foo').deref().should.equal('hello');
       structure.undo();
       structure.cursor('foo').deref().should.equal('bar');
-      structure.cursor('foo').update(function () { return 'hello2'; });
+      structure.cursor('foo').update(function () { return 'hello2'; });
       structure.cursor('foo').deref().should.equal('hello2');
       structure.history.toJS().should.eql([
         { 'foo': 'bar' },
@@ -521,7 +521,7 @@ describe('structure', function () {
         history: true
       });
 
-      structure.cursor('foo').update(function () { return 'hello'; });
+      structure.cursor('foo').update(function () { return 'hello'; });
       structure.cursor('foo').deref().should.equal('hello');
       structure.undo();
       structure.cursor('foo').deref().should.equal('bar');
@@ -535,8 +535,8 @@ describe('structure', function () {
         history: true
       });
 
-      structure.cursor('foo').update(function () { return 'Change 1'; });
-      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').update(function () { return 'Change 2'; });
       structure.cursor('foo').deref().should.equal('Change 2');
 
       structure.undo(2);
@@ -549,9 +549,9 @@ describe('structure', function () {
         history: true
       });
 
-      structure.cursor('foo').update(function () { return 'Change 1'; });
-      structure.cursor('foo').update(function () { return 'Change 2'; });
-      structure.cursor('foo').update(function () { return 'Change 3'; });
+      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').update(function () { return 'Change 3'; });
       structure.cursor('foo').deref().should.equal('Change 3');
 
       structure.undo(3);
@@ -567,11 +567,11 @@ describe('structure', function () {
         history: true
       });
 
-      structure.cursor('foo').update(function () { return 'Change 1'; });
+      structure.cursor('foo').update(function () { return 'Change 1'; });
       structure.cursor('foo').deref().should.equal('Change 1');
       var change1 = structure.current;
 
-      structure.cursor('foo').update(function () { return 'Change 2'; });
+      structure.cursor('foo').update(function () { return 'Change 2'; });
       structure.cursor('foo').deref().should.equal('Change 2');
 
       structure.undoUntil(change1);
