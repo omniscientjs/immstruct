@@ -52,6 +52,42 @@ describe('structure', function () {
     });
   });
 
+  it('should not emit events nor affect history when updating the structure does not actually change anything', function () {
+
+    var calls = 0;
+    var structure = new Structure({
+      data: { foo: {}, bar: 42 },
+      history: true
+    });
+    var original = structure.current;
+
+    structure.on('swap', function() {
+      calls++;
+    });
+
+    structure.on('change', function() {
+      calls++;
+    });
+
+    var cursor = structure.cursor();
+    var cursorBar = structure.cursor('bar');
+
+    cursor.set('foo', Immutable.Map());
+
+    calls.should.equal(0);
+
+    cursorBar.update(function() {
+      return 42;
+    });
+
+    calls.should.equal(0);
+    original.should.equal(structure.current);
+
+    // Ensure history is not affected
+    structure.history.size.should.equal(1);
+
+  });
+
   it('should be able to force trigger swap', function (done) {
     var structure = new Structure();
     structure.on('swap', function () {
