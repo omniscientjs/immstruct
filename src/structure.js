@@ -163,10 +163,10 @@ function handlePersisting (emitter, fn) {
     if(newData === oldData) return newStructure;
 
     var oldObject = oldData && oldData.getIn(path);
-    var newObject = newData && newData.getIn(path);
+    var newObject = newStructure && newStructure.getIn(path);
 
     var inOld = oldData && hasIn(oldData, path);
-    var inNew = newData && hasIn(newData, path);
+    var inNew = newStructure && hasIn(newStructure, path);
 
     if (inOld && !inNew) {
       emitter.emit('delete', path, oldObject);
