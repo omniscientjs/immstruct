@@ -77,6 +77,7 @@ Structure.prototype.cursor = function (path) {
 
 Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
   this.emit('swap', newData || this.current, oldData, keyPath);
+  possiblyEmitAnimationFrameEvent(this, newData || this.current, oldData, keyPath)
 };
 
 Structure.prototype.undo = function(back) {
