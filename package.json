@@ -35,7 +35,14 @@
     "inherits": "^2.0.1"
   },
   "devDependencies": {
+    "browserify": "^8.1.3",
+    "browserify-shim": "^3.8.2",
     "chai": "^1.10.0",
-    "mocha": "^2.0.1"
+    "derequire": "^1.2.1",
+    "mocha": "^2.0.1",
+    "uglify-js": "^2.4.16"
+  },
+  "browserify-shim": {
+    "immutable": "global:Immutable"
   }
 }
