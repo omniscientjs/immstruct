@@ -17,6 +17,8 @@ module.exports.withHistory = function (key, data) {
   });
 };
 
+module.exports.Structure = Structure;
+
 function getInstance (options) {
   if (typeof options.key === 'object') {
     options.data = options.key;

@@ -15,6 +15,10 @@ describe('immstruct', function () {
     immstruct('customKey').should.be.instanceof(EventEmitter);
   });
 
+  it('should expose Structure', function () {
+    immstruct.should.have.property('Structure');
+  });
+
   it('should create empty immutable structure and random key if no input', function () {
     var structure = immstruct();
     structure.current.toJS().should.be.an('object');
