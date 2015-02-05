@@ -54,19 +54,12 @@ Structure.prototype.cursor = function (path) {
     // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
     // changes at path `path`, and sync this to `self.current`.
 
-    var inNew = hasIn(newRoot, path);
-    var inOld = hasIn(self.current, path);
-
-    if(!inNew && inOld) {
+    if(!hasIn(newRoot, path)) {
       return self.current = self.current.removeIn(path);
     }
-    if(inNew && !inOld) {
-      return self.current = self.current.setIn(path, newRoot.getIn(path));
-    }
 
-    return self.current = self.current.updateIn(path, function (data) {
-      return newRoot.getIn(path);
-    });
+    // Update an existing path or add a new path within the current map.
+    return self.current = self.current.setIn(path, newRoot.getIn(path));
   };
 
   changeListener = handleHistory(this, changeListener);
