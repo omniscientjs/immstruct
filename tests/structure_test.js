@@ -532,7 +532,7 @@ describe('structure', function () {
 
         struct.current.toJS().should.eql({ foo: {}, bar: {} });
       });
-      
+
     });
 
   });
@@ -618,6 +618,318 @@ describe('structure', function () {
 
       structure.undoUntil(change1);
       structure.cursor('foo').deref().should.equal('Change 1');
+    });
+
+  });
+
+
+  describe('reference', function () {
+
+    it('should expose API for creating reference', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      structure.should.have.property('reference');
+    });
+
+    it('should expose references with observe and unobserve functions', function () {
+      var ref = new Structure({
+        data: { 'foo': 'bar' }
+      }).reference();
+
+      ref.should.have.property('observe');
+      ref.should.have.property('unobserve');
+    });
+
+    it('should create cursor for value', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      structure.reference('foo').cursor().deref().should.equal('bar');
+    });
+
+    it('should have a self-updating cursor', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      var ref = structure.reference('foo');
+      var newCursor = ref.cursor().update(function () {
+        return 'updated';
+      });
+      newCursor.deref().should.equal('updated');
+      ref.cursor().deref().should.equal('updated');
+    });
+
+    it('should have a self-updating cursor on children', function () {
+      var structure = new Structure({
+        data: { 'foo': { 'bar': 1 } }
+      });
+
+      var ref = structure.reference('foo');
+      var newCursor = ref.cursor().cursor('bar').update(function (state) {
+        return 'updated';
+      });
+      newCursor.deref().should.equal('updated');
+      ref.cursor().toJS().should.eql({
+        'bar': 'updated'
+      });
+    });
+
+    it('should support sub-cursor', function () {
+      var structure = new Structure({
+        data: { 'foo': { 'bar': 1 } }
+      });
+
+      var ref = structure.reference('foo');
+      var newCursor = ref.cursor('bar').update(function (state) {
+        return 'updated';
+      });
+      newCursor.deref().should.equal('updated');
+      ref.cursor().toJS().should.eql({
+        'bar': 'updated'
+      });
+    });
+
+
+    it('should still be a reference after unobserve', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      var ref = structure.reference('foo');
+      ref.unobserve();
+      ref.cursor().update(function () { return 'updated'; });
+      ref.cursor().deref().should.equal('updated');
+    });
+
+    it('should be destroyable', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      var ref = structure.reference('foo');
+      ref.destroy();
+      (ref.cursor === void 0).should.equal(true);
+      (ref.observe === void 0).should.equal(true);
+      (ref.unobserve === void 0).should.equal(true);
+    });
+
+    // @TODO: Maybe this should be possible at some time
+    // it('should have a self-updating cursor with specified path', function () {
+    //   var structure = new Structure({
+    //     data: { 'foo': 'bar' }
+    //   });
+
+    //   var ref = structure.reference();
+    //   var newCursor = ref.cursor('foo').update(function () {
+    //     return 'updated';
+    //   });
+    //   ref.cursor('foo').deref().should.equal('updated');
+    //   ref.cursor().deref().should.eql({ 'foo': 'updated' });
+    //   newCursor.deref().should.equal('updated');
+    // });
+
+    describe('listeners', function () {
+
+      it('should trigger change listener for reference', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe(function () { done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should trigger change listener for reference when chaning cursor from outside', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe(function () { done(); });
+        structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should trigger multiple change listeners for reference', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+
+        var i = 0;
+        ref.observe(function () { i++; });
+        ref.observe(function () { i++; });
+        ref.observe(function () { if(i == 2) done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should not trigger removed listener', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var i = 0;
+        var ref = structure.reference('foo');
+        var unsubscribe = ref.observe(function () { i++; });
+        unsubscribe();
+
+        ref.observe(function () { i++; });
+        ref.observe(function () { if(i == 1) done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should be able to call unsubscribe multiple times without effect', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+
+        var i = 0;
+        var unsubscribe = ref.observe(function () { i++; });
+        unsubscribe();
+        unsubscribe();
+        unsubscribe();
+
+        ref.observe(function () { i++; });
+        ref.observe(function () { if(i == 1) done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should be able to call add new listeners after unsubscribing all', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+
+        var i = 0;
+        ref.observe(function () { i++; });
+        ref.unobserve();
+
+        ref.observe(function () { i++; });
+        ref.observe(function () { 
+          i.should.equal(1);
+          ref.cursor().deref().should.equal('updated');
+          done();
+        });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should not remove new listeners with old unsubscribers', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        var changed = false;
+        var unsubscribe = ref.observe(function () { changed = true; });
+        unsubscribe();
+
+        ref.observe(function () { 
+          changed.should.equal(false);
+          done();
+        });
+        unsubscribe();
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should not trigger multiple removed listener', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+
+        var i = 0;
+        var unsubscribe = ref.observe(function () { i++; });
+        unsubscribe();
+
+        unsubscribe = ref.observe(function () { i++; });
+        unsubscribe();
+
+        ref.observe(function () { if(i == 0) done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should unsubscribe all listeners for path', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var changed = false;
+        var ref = structure.reference('foo');
+        var cursor = ref.cursor();
+
+        ref.observe(function () { changed = true; });
+        ref.observe(function () { changed = true; });
+        ref.observe(function () { changed = true; });
+
+        ref.unobserve();
+        cursor.update(function() { return 'changed'; });
+        changed.should.equal(false);
+      });
+
+      it('should only remove listeners on given path', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar', 'bar': 'foo' }
+        });
+
+        var ref1 = structure.reference('foo');
+        var ref2 = structure.reference('bar');
+        var cursor1 = ref1.cursor();
+        var cursor2 = ref2.cursor();
+
+        var firstChange = false;
+        var secondChange = false;
+
+        ref1.observe(function () { firstChange = true; });
+        ref1.observe(function () { firstChange = true; });
+        ref1.observe(function () { firstChange = true; });
+
+        ref2.observe(function () { secondChange = true; });
+
+        ref1.unobserve();
+        cursor1.update(function() { return 'changed'; });
+        firstChange.should.equal(false);
+
+        cursor2.update(function() { return 'changed'; });
+        secondChange.should.equal(true);
+      });
+
+      it('should remove listeners for all local references', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar', 'bar': 'foo' }
+        });
+
+        var ref1 = structure.reference('foo');
+        var ref2 = structure.reference('bar');
+        var cursor1 = ref1.cursor();
+        var cursor2 = ref2.cursor();
+
+        var firstChange = false;
+        var secondChange = false;
+
+        ref1.observe(function () { firstChange = true; });
+        ref1.observe(function () { firstChange = true; });
+        ref1.observe(function () { firstChange = true; });
+
+        ref2.observe(function () { secondChange = true; });
+
+        ref1.unobserve();
+        cursor1.update(function() { return 'changed'; });
+        firstChange.should.equal(false);
+
+        ref2.unobserve();
+        cursor2.update(function() { return 'changed'; });
+        secondChange.should.equal(false);
+      });
+
     });
 
   });

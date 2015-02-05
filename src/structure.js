@@ -16,6 +16,8 @@ var utils = require('./utils');
  *
  ************************************/
 function Structure (options) {
+  var self = this;
+
   options = options || {};
   if (!(this instanceof Structure)) {
     return new Structure(options);
@@ -33,6 +35,16 @@ function Structure (options) {
     this._currentRevision = 0;
   }
 
+  this._pathListeners = [];
+  this.on('swap', function (newData, oldData, keyPath) {
+    listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
+      fns.forEach(function (fn) {
+        if (typeof fn !== 'function') return;
+        fn(newData, oldData, keyPath);
+      });
+    });
+  });
+
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
@@ -47,7 +59,6 @@ Structure.prototype.cursor = function (path) {
   }
 
   var changeListener = function (newRoot, oldRoot, path) {
-
     if(self.current === oldRoot) {
       return self.current = newRoot;
     }
@@ -66,6 +77,56 @@ Structure.prototype.cursor = function (path) {
   changeListener = handleSwap(this, changeListener);
   changeListener = handlePersisting(this, changeListener);
   return Cursor.from(self.current, path, changeListener);
+};
+
+Structure.prototype.reference = function (path) {
+  var self = this, pathId = pathString(path);
+  var listenerNs = self._pathListeners[pathId];
+  var cursor = this.cursor(path);
+
+  var changeListener = function (newRoot, oldRoot, changedPath) { cursor = self.cursor(path); };
+  var referenceListeners = [changeListener];
+  this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
+
+  return {
+    observe: function (newFn) {
+      if (this._dead || typeof newFn !== 'function') return;
+      self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
+      referenceListeners = referenceListeners.concat(newFn);
+
+      return function unobserve () {
+        var fnIndex = self._pathListeners[pathId].indexOf(newFn);
+        var localListenerIndex = referenceListeners.indexOf(newFn);
+
+        if (referenceListeners[localListenerIndex] === newFn) {
+          referenceListeners.splice(localListenerIndex, 1);
+        }
+
+        if (!self._pathListeners[pathId]) return;
+        if (self._pathListeners[pathId][fnIndex] !== newFn) return;
+        self._pathListeners[pathId].splice(fnIndex, 1);
+      };
+    },
+    cursor: function (subPath) {
+      if (subPath) return cursor.cursor(subPath);
+      return cursor;
+    },
+    unobserve: function () {
+      removeAllListenersBut(self, pathId, referenceListeners, changeListener);
+      referenceListeners = [changeListener];
+    },
+    destroy: function () {
+      removeAllListenersBut(self, pathId, referenceListeners);
+      referenceListeners = void 0;
+      cursor = void 0;
+
+      this._dead = true;
+      this.observe = void 0;
+      this.unobserve = void 0;
+      this.cursor = void 0;
+      this.destroy = void 0;
+    }
+  };
 };
 
 Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
@@ -177,11 +238,37 @@ function handlePersisting (emitter, fn) {
  * Private helpers.
  ***********************************/
 
+function removeAllListenersBut(self, pathId, listeners, except) {
+  if (!listeners) return;
+  listeners.forEach(function (fn) {
+    if (except && fn === except) return;
+    var index = self._pathListeners[pathId].indexOf(fn);
+    self._pathListeners[pathId].splice(index, 1);
+  });
+}
+
 // Check if path exists.
 var NOT_SET = {};
 function hasIn(cursor, path) {
   if(cursor.hasIn) return cursor.hasIn(path);
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
+}
+
+function pathString(path) {
+  var topLevel = 'global';
+  if (!path || !path.length) return topLevel;
+  return [topLevel].concat(path).join('|');
+}
+
+function listListenerMatching (listeners, basePath) {
+  var newListeners = [];
+  for (var key in listeners) {
+    if (!listeners.hasOwnProperty(key)) return;
+    if (basePath.indexOf(key) !== 0) continue;
+    newListeners.push(listeners[key]);
+  }
+
+  return newListeners;
 }
 
 // Check if passed structure is existing immutable structure.
