@@ -1,5 +1,5 @@
 /**
-* immstruct v1.3.0
+* immstruct v1.3.1
 * Authors: Mikael Brevik, @torgeir
 ***************************************/
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.immstruct=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -641,19 +641,12 @@ Structure.prototype.cursor = function (path) {
     // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
     // changes at path `path`, and sync this to `self.current`.
 
-    var inNew = hasIn(newRoot, path);
-    var inOld = hasIn(self.current, path);
-
-    if(!inNew && inOld) {
+    if(!hasIn(newRoot, path)) {
       return self.current = self.current.removeIn(path);
     }
-    if(inNew && !inOld) {
-      return self.current = self.current.setIn(path, newRoot.getIn(path));
-    }
 
-    return self.current = self.current.updateIn(path, function (data) {
-      return newRoot.getIn(path);
-    });
+    // Update an existing path or add a new path within the current map.
+    return self.current = self.current.setIn(path, newRoot.getIn(path));
   };
 
   changeListener = handleHistory(this, changeListener);
