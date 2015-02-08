@@ -1,16 +1,47 @@
 var Structure = require('./src/structure');
 
-module.exports = function (key, data) {
-  return getInstance({
+function Immstruct () {
+  if (!(this instanceof Immstruct)) {
+    return new Immstruct();
+  }
+
+  this.instances = {};
+}
+
+Immstruct.prototype.get = function (key, data) {
+  return getInstance(this, {
     key: key,
     data: data
   });
 };
 
-module.exports.instances = {};
+Immstruct.prototype.clear = function () {
+  this.instances = {};
+};
+
+Immstruct.prototype.remove = function (key) {
+  return delete this.instances[key];
+};
+
+Immstruct.prototype.withHistory = function (key, data) {
+  return getInstance(this, {
+    key: key,
+    data: data,
+    history: true
+  });
+};
+
+var inst = new Immstruct();
+
+module.exports = function (key, data) {
+  return getInstance(inst, {
+    key: key,
+    data: data
+  });
+};
 
 module.exports.withHistory = function (key, data) {
-  return getInstance({
+  return getInstance(inst, {
     key: key,
     data: data,
     history: true
@@ -18,26 +49,26 @@ module.exports.withHistory = function (key, data) {
 };
 
 module.exports.Structure = Structure;
+module.exports.Immstruct = Immstruct;
+module.exports.clear = inst.clear.bind(inst);
+module.exports.remove = inst.remove.bind(inst);
+Object.defineProperty(module.exports, 'instances', {
+  get: function() { return inst.instances; },
+  enumerable: true,
+  configurable: true
+});
 
-function getInstance (options) {
+function getInstance (obj, options) {
   if (typeof options.key === 'object') {
     options.data = options.key;
     options.key = void 0;
   }
 
-  if (options.key && module.exports.instances[options.key]) {
-    return module.exports.instances[options.key];
+  if (options.key && obj.instances[options.key]) {
+    return obj.instances[options.key];
   }
 
   var newInstance = new Structure(options);
-  module.exports.instances[newInstance.key] = newInstance;
+  obj.instances[newInstance.key] = newInstance;
   return newInstance;
 }
-
-module.exports.clear = function () {
-  module.exports.instances = {};
-};
-
-module.exports.remove = function (key) {
-  return delete module.exports.instances[key];
-};

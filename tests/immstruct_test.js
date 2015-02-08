@@ -19,10 +19,33 @@ describe('immstruct', function () {
     immstruct.should.have.property('Structure');
   });
 
+  it('should expose instancible Immstruct', function () {
+    immstruct.should.have.property('Immstruct');
+  });
+
   it('should create empty immutable structure and random key if no input', function () {
     var structure = immstruct();
     structure.current.toJS().should.be.an('object');
     structure.key.should.be.an('string');
+  });
+
+  it('should create empty immutable structure and random key if no input on local instance', function () {
+    var local = new immstruct.Immstruct();
+    var structure = local.get();
+    structure.current.toJS().should.be.an('object');
+    structure.key.should.be.an('string');
+  });
+
+  it('local instance and global instance should not share instances', function () {
+    var local = new immstruct.Immstruct();
+    var structure = local.get();
+    var stdStructure = immstruct();
+
+    local.instances[structure.key].should.not.equal(stdStructure);
+
+    local.instances.should.be.an('object');
+    stdStructure.should.be.an('object');
+    structure.should.be.an('object');
   });
 
   it('should be able to create structure with history', function () {
