@@ -663,6 +663,21 @@ describe('structure', function () {
       ref.cursor().deref().should.equal('updated');
     });
 
+
+    it('should have a self-updating cursor when changing from outside', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      var ref = structure.reference('foo');
+      var newCursor = structure.cursor('foo').update(function () {
+        return 'updated';
+      });
+
+      newCursor.deref().should.equal('updated');
+      ref.cursor().deref().should.equal('updated');
+    });
+
     it('should have a self-updating cursor on children', function () {
       var structure = new Structure({
         data: { 'foo': { 'bar': 1 } }
@@ -717,21 +732,6 @@ describe('structure', function () {
       (ref.unobserve === void 0).should.equal(true);
     });
 
-    // @TODO: Maybe this should be possible at some time
-    // it('should have a self-updating cursor with specified path', function () {
-    //   var structure = new Structure({
-    //     data: { 'foo': 'bar' }
-    //   });
-
-    //   var ref = structure.reference();
-    //   var newCursor = ref.cursor('foo').update(function () {
-    //     return 'updated';
-    //   });
-    //   ref.cursor('foo').deref().should.equal('updated');
-    //   ref.cursor().deref().should.eql({ 'foo': 'updated' });
-    //   newCursor.deref().should.equal('updated');
-    // });
-
     describe('listeners', function () {
 
       it('should trigger change listener for reference', function (done) {
@@ -744,7 +744,7 @@ describe('structure', function () {
         ref.cursor().update(function () { return 'updated'; });
       });
 
-      it('should trigger change listener for reference when chaning cursor from outside', function (done) {
+      it('should trigger change listener for reference when changing cursor from outside', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }
         });
@@ -752,6 +752,18 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe(function () { done(); });
         structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should support nested paths', function () {
+        var structure = new Structure({
+          data: {
+            someBox: { message: 'Hello World!' }
+          }
+        });
+
+        var ref = structure.reference(['someBox', 'message']);
+        var newCursor = ref.cursor().update(function () { return 'Hello, World!'; });
+        ref.cursor().deref().should.equal(newCursor.deref());
       });
 
       it('should trigger multiple change listeners for reference', function (done) {
