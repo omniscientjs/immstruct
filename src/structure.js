@@ -9,6 +9,7 @@ var utils = require('./utils');
  * ## Public API.
  *   Constructor({ history: bool, key: string, data: structure|object })
  *   .cursor(path)
+ *   .reference(path)
  *   .forceHasSwapped(newData, oldData, keyPath)
  *   .undo(steps)
  *   .redo(steps)

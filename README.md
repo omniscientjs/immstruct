@@ -44,6 +44,72 @@ cursor = cursor.update(function (x) {
 console.log(cursor.deref()); //=> 3
 ```
 
+## Reference Cursors
+
+With immstruct, you can create references to cursors, allowing you to have
+access to cursors which will always be updated. This is not to be confuced
+with the `reference cursors` term used in Om, but can allow for similar
+usage with [Omniscient](https://github.com/omniscientjs/omniscient). It's
+best explained by example:
+
+```js
+var structure = immstruct({
+  someBox: { message: 'Hello World!' }
+});
+
+// Create a reference to 'message':
+var ref = structure.reference(['someBox', 'message']);
+
+// Get cursor from reference:
+ref.cursor();
+
+// Update cursor
+var newCursor = ref.cursor().update(function () { return 'Hello, World!'; });
+
+// Get cursor again, and it's updated:
+console.log(ref.cursor().deref());
+//=> Hello, World!
+
+// Also
+console.log(ref.cursor().deref() === newCursor.deref());
+```
+
+This is also true, even if you change a cursor without it's reference:
+
+```js
+
+var structure = immstruct({ 'foo': 'bar' });
+
+var ref = structure.reference('foo');
+structure.cursor('foo').update(function () { return 'updated'; });
+
+console.log(ref.cursor().deref()) //=> 'updated'
+```
+
+Reference coursors will also allow for listening on alterations on specific
+paths:
+
+```js
+// Create a reference to 'message':
+var ref = structure.reference(['someBox']);
+
+var unobserve = ref.observe(function () {
+  // Will be updated when 'someBox' is changed, or
+  // if ['someBox', 'message'] is changed.
+});
+
+// Do some updates
+ref.cursor().update(function () { return 'updated'; });
+
+// When you want to remove listener:
+unobserve();
+```
+
+**Note: The parents change listeners are called when sub-cursors are changed.**
+
+Also note, cursors are still immutable. If you store a cursor from `reference.cursor()`
+it will get "old", and you can rewrite newer information.
+
 ## Usage Undo/Redo
 
 ```js
@@ -94,6 +160,14 @@ var randomGeneratedKey = structure.key;
 var structure = immstruct()
 var randomGeneratedKey = structure.key;
 // Create new empty structure with random key
+```
+
+You can also create your own instance of Immstruct, isolating the
+different instances of structures:
+
+```js
+var localImmstruct = new immstruct.Immstruct()
+var structure = localImmstruct.get('someKey', { my: 'object' });
 ```
 
 #### Methods and accessers
@@ -156,6 +230,38 @@ See [Immutable.js cursors](https://github.com/facebook/immutable-js/tree/master/
 **Note:** You **probably never** want to use use `structure.current.cursor()`
 directly, as this won't add event handlers for when the cursor is updated.
 
+#### `Structure#reference([path : Array<string>]) : CursorReference`
+
+Creates a [reference cursor](#reference-cursors) for having access to
+cursors which are always up to date with the latest structure.
+
+Example:
+```js
+var ref = structure.reference(['some', 'path', 'here']);
+var cursor = ref.cursor();
+```
+
+##### CursorReference#cursor([path : Array<string>]) : Cursor (Immutable.js)
+
+Creates a (sub-)cursor from the reference. If path is provided, a sub-cursor
+is created, without a path, the latest and greatest cursor of the path
+provided to the reference is created.
+
+##### CursorReference#observe(listener : Function) : unobserve : Function
+
+Add a listener for when the data the cursor (or any sub-cursors) in the reference
+changes.
+
+Returns a function to remove observer.
+
+##### CursorReference#unobserve()
+
+Remove all observers for this reference.
+
+##### CursorReference#destroy()
+
+Clean up all, remove all listeners and unset all loose variables to clear up
+memory.
 
 #### `Structure#forceHasSwapped() : void`
 
