@@ -47,10 +47,12 @@ console.log(cursor.deref()); //=> 3
 ## Reference Cursors
 
 With immstruct, you can create references to cursors, allowing you to have
-access to cursors which will always be updated. This is not to be confuced
-with the `reference cursors` term used in Om, but can allow for similar
-usage with [Omniscient](https://github.com/omniscientjs/omniscient). It's
-best explained by example:
+access to cursors which will always be fresh. Normal cursors in Immutable.js
+is immutable values and holds references to the structure at the time the
+cursor was created. This is not to be confused with the `reference cursors`
+term used in Om, but can allow for similar usage with
+[Omniscient](https://github.com/omniscientjs/omniscient). It's best explained
+by example:
 
 ```js
 var structure = immstruct({
