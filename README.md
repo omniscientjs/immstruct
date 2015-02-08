@@ -256,7 +256,7 @@ changes.
 
 Returns a function to remove observer.
 
-##### CursorReference#unobserve()
+##### CursorReference#unobserveAll()
 
 Remove all observers for this reference.
 

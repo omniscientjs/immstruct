@@ -112,7 +112,7 @@ Structure.prototype.reference = function (path) {
       if (subPath) return cursor.cursor(subPath);
       return cursor;
     },
-    unobserve: function () {
+    unobserveAll: function () {
       removeAllListenersBut(self, pathId, referenceListeners, changeListener);
       referenceListeners = [changeListener];
     },
@@ -123,7 +123,7 @@ Structure.prototype.reference = function (path) {
 
       this._dead = true;
       this.observe = void 0;
-      this.unobserve = void 0;
+      this.unobserveAll = void 0;
       this.cursor = void 0;
       this.destroy = void 0;
     }

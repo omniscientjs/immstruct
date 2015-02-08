@@ -639,7 +639,7 @@ describe('structure', function () {
       }).reference();
 
       ref.should.have.property('observe');
-      ref.should.have.property('unobserve');
+      ref.should.have.property('unobserveAll');
     });
 
     it('should create cursor for value', function () {
@@ -715,7 +715,7 @@ describe('structure', function () {
       });
 
       var ref = structure.reference('foo');
-      ref.unobserve();
+      ref.unobserveAll();
       ref.cursor().update(function () { return 'updated'; });
       ref.cursor().deref().should.equal('updated');
     });
@@ -729,7 +729,7 @@ describe('structure', function () {
       ref.destroy();
       (ref.cursor === void 0).should.equal(true);
       (ref.observe === void 0).should.equal(true);
-      (ref.unobserve === void 0).should.equal(true);
+      (ref.unobserveAll === void 0).should.equal(true);
     });
 
     describe('listeners', function () {
@@ -822,7 +822,7 @@ describe('structure', function () {
 
         var i = 0;
         ref.observe(function () { i++; });
-        ref.unobserve();
+        ref.unobserveAll();
 
         ref.observe(function () { i++; });
         ref.observe(function () { 
@@ -882,7 +882,7 @@ describe('structure', function () {
         ref.observe(function () { changed = true; });
         ref.observe(function () { changed = true; });
 
-        ref.unobserve();
+        ref.unobserveAll();
         cursor.update(function() { return 'changed'; });
         changed.should.equal(false);
       });
@@ -906,7 +906,7 @@ describe('structure', function () {
 
         ref2.observe(function () { secondChange = true; });
 
-        ref1.unobserve();
+        ref1.unobserveAll();
         cursor1.update(function() { return 'changed'; });
         firstChange.should.equal(false);
 
@@ -933,11 +933,11 @@ describe('structure', function () {
 
         ref2.observe(function () { secondChange = true; });
 
-        ref1.unobserve();
+        ref1.unobserveAll();
         cursor1.update(function() { return 'changed'; });
         firstChange.should.equal(false);
 
-        ref2.unobserve();
+        ref2.unobserveAll();
         cursor2.update(function() { return 'changed'; });
         secondChange.should.equal(false);
       });
