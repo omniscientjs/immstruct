@@ -81,6 +81,9 @@ Structure.prototype.cursor = function (path) {
 };
 
 Structure.prototype.reference = function (path) {
+  if (isCursor(path) && path._keyPath) {
+    path = path._keyPath;
+  }
   var self = this, pathId = pathString(path);
   var listenerNs = self._pathListeners[pathId];
   var cursor = this.cursor(path);
@@ -304,6 +307,10 @@ function onlyOnEvent(eventName, fn) {
     if (info.eventName !== eventName) return;
     return fn(newData, oldData, keyPath);
   };
+}
+
+function isCursor (potential) {
+  return potential && typeof potential.deref === 'function';
 }
 
 // Check if passed structure is existing immutable structure.

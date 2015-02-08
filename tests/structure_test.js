@@ -663,6 +663,21 @@ describe('structure', function () {
       ref.cursor().deref().should.equal('updated');
     });
 
+    it('should take cursor as argument', function () {
+      var structure = new Structure({
+        data: { 'foo': 'bar' }
+      });
+
+      var ref = structure.reference(structure.cursor('foo'));
+      var isCalled = false;
+      var newCursor = ref.cursor().update(function () {
+        isCalled = true;
+        return 'updated';
+      });
+      newCursor.deref().should.equal('updated');
+      ref.cursor().deref().should.equal('updated');
+      isCalled.should.equal(true);
+    });
 
     it('should have a self-updating cursor when changing from outside', function () {
       var structure = new Structure({
