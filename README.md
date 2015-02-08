@@ -249,10 +249,14 @@ Creates a (sub-)cursor from the reference. If path is provided, a sub-cursor
 is created, without a path, the latest and greatest cursor of the path
 provided to the reference is created.
 
-##### CursorReference#observe(listener : Function) : unobserve : Function
+##### CursorReference#observe([eventType : String, ]listener : Function) : unobserve : Function
 
 Add a listener for when the data the cursor (or any sub-cursors) in the reference
 changes.
+
+Optional `eventType` will define what type of change to listen for; `swap`, `add`, `change` and `delete.
+Same as [Structure Events as defined below](#structure-events). If no event is passed, `swap` is used, which
+means every change.
 
 Returns a function to remove observer.
 
