@@ -766,6 +766,92 @@ describe('structure', function () {
         ref.cursor().deref().should.equal(newCursor.deref());
       });
 
+      it('should trigger only change events when specifying event type', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('change', function () { done(); });
+        structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should trigger only delete events when specifying event type', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('delete', function () { done(); });
+        structure.cursor().remove('foo');
+      });
+
+      it('should trigger only add events when specifying event type', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('bar');
+        ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('add', function () { done(); });
+        structure.cursor(['bar']).update(function (state) {
+          return 'baz';
+        });
+      });
+
+      it('should trigger on every event type if listening to swap', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('bar');
+        var i = 0;
+        ref.observe('swap', function () { 
+          i++;
+          if (i === 3) done();
+        });
+
+        // Add
+        structure.cursor(['bar']).update(function (state) {
+          return 'baz';
+        });
+
+        // Change
+        structure.cursor('bar').update(function () { return 'updated'; });
+
+        // Delete
+        structure.cursor().remove('bar');
+      });
+
+      it('should trigger on every event type if not specified event name', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('bar');
+        var i = 0;
+        ref.observe(function () { 
+          i++;
+          if (i === 3) done();
+        });
+
+        // Add
+        structure.cursor(['bar']).update(function (state) {
+          return 'baz';
+        });
+
+        // Change
+        structure.cursor('bar').update(function () { return 'updated'; });
+
+        // Delete
+        structure.cursor().remove('bar');
+      });
+
       it('should trigger multiple change listeners for reference', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }

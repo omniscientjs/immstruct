@@ -90,8 +90,16 @@ Structure.prototype.reference = function (path) {
   this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
 
   return {
-    observe: function (newFn) {
+    observe: function (eventName, newFn) {
+      if (typeof eventName === 'function') {
+        newFn = eventName;
+        eventName = void 0;
+      }
       if (this._dead || typeof newFn !== 'function') return;
+      if (eventName && eventName !== 'swap') {
+        newFn = onlyOnEvent(eventName, newFn);
+      }
+
       self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
       referenceListeners = referenceListeners.concat(newFn);
 
@@ -217,19 +225,10 @@ function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
     if(newData === oldData) return newStructure;
+    var info = analyze(newData, oldData, path);
 
-    var oldObject = oldData && oldData.getIn(path);
-    var newObject = newStructure && newStructure.getIn(path);
-
-    var inOld = oldData && hasIn(oldData, path);
-    var inNew = newStructure && hasIn(newStructure, path);
-
-    if (inOld && !inNew) {
-      emitter.emit('delete', path, oldObject);
-    } else if (inOld && inNew) {
-      emitter.emit('change', path, newObject, oldObject);
-    } else if (!inOld && inNew) {
-      emitter.emit('add', path, newObject);
+    if (info.eventName) {
+      emitter.emit.apply(emitter, [info.eventName].concat(info.arguments));
     }
     return newStructure;
   };
@@ -247,6 +246,33 @@ function removeAllListenersBut(self, pathId, listeners, except) {
     self._pathListeners[pathId].splice(index, 1);
   });
 }
+
+function analyze (newData, oldData, path) {
+  var oldObject = oldData && oldData.getIn(path);
+  var newObject = newData && newData.getIn(path);
+
+  var inOld = oldData && hasIn(oldData, path);
+  var inNew = newData && hasIn(newData, path);
+
+  var arguments, eventName;
+
+  if (inOld && !inNew) {
+    eventName = 'delete';
+    arguments = [path, oldObject];
+  } else if (inOld && inNew) {
+    eventName = 'change';
+    arguments = [path, newObject, oldObject];
+  } else if (!inOld && inNew) {
+    eventName = 'add';
+    arguments = [path, newObject];
+  }
+
+  return {
+    eventName: eventName,
+    arguments: arguments
+  };
+}
+
 
 // Check if path exists.
 var NOT_SET = {};
@@ -270,6 +296,14 @@ function listListenerMatching (listeners, basePath) {
   }
 
   return newListeners;
+}
+
+function onlyOnEvent(eventName, fn) {
+  return function (newData, oldData, keyPath) {
+    var info = analyze(newData, oldData, keyPath);
+    if (info.eventName !== eventName) return;
+    return fn(newData, oldData, keyPath);
+  };
 }
 
 // Check if passed structure is existing immutable structure.
