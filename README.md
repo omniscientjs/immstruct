@@ -73,7 +73,7 @@ This offers benefits similar to that of [Om](https://github.com/omcljs/om/wiki/A
 [React.js](http://facebook.github.io/react/) or [Omniscient](https://github.com/omniscientjs/omniscient/) components can observe pieces of application
 state without it being passed as cursors in props from their parent components.
 
-References also allow for listeners that fire when their path or the path of sub-cursors changes:
+References also allow for listeners that fire when their path or the path of sub-cursors change:
 
 ```js
 var structure = immstruct({
