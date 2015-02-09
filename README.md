@@ -24,7 +24,7 @@ structure.on('swap', function (newStructure, oldStructure) {
 var cursor = structure.cursor(['a', 'b', 'c']);
 
 // Update the value at the cursor. As cursors are immutable,
-this returns a new cursor that points to the new data
+// this returns a new cursor that points to the new data
 var newCursor = cursor.update(function (x) {
   return x + 1;
 });
