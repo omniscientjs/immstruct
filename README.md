@@ -61,9 +61,18 @@ to a piece of data from where cursors will always be fresh.
 var structure = immstruct({ 'foo': 'bar' });
 var ref = structure.reference('foo');
 
+console.log(ref.cursor().deref()) //=> 'bar'
+
+var oldCursor = structure.cursor('foo');
+console.log(oldCursor.deref()) //=> 'bar'
+
 var newCursor = structure.cursor('foo').update(function () { return 'updated'; });
 console.log(newCursor.deref()) //=> 'updated'
 
+assert(oldCursor !== newCursor);
+
+// You don't need to manage and track fresh/stale cursors.
+// A reference cursor will do it for you.
 console.log(ref.cursor().deref()) //=> 'updated'
 ```
 
