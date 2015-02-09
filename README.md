@@ -18,7 +18,7 @@ structure.on('swap', function (newStructure, oldStructure) {
   console.log('New structure:', newStructure.toJSON());
 
   // e.g. with usage with React
-  // React.render(App({ cursor: structure.current() }), document.body);
+  // React.render(App({ cursor: structure.cursor() }), document.body);
 });
 
 // Remember: Cursor is immutable. Update cursor.
