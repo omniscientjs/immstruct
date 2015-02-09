@@ -1,8 +1,8 @@
 Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][depstat-image]][depstat-url]
 ======
 
-A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/master/contrib/cursor) to easily create cursors that notify if they
-are updated. Handy for usage with immutable pure components for views,
+A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/master/contrib/cursor) to easily create cursors that notify when they
+are updated. Handy for use with immutable pure components for views,
 like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
 ## Usage
@@ -51,73 +51,58 @@ var updatedCursor = cursor.update(function (x) { // triggers `swap` in somefile.
 console.log(updatedCursor.deref()); //=> 3
 ```
 
-## Reference Cursors
+## References
 
-With immstruct, you can create references to cursors, allowing you to have
-access to cursors which will always be fresh. Normal cursors in Immutable.js
-is immutable values and holds references to the structure at the time the
-cursor was created. This is not to be confused with the `reference cursors`
-term used in Om, but can allow for similar usage with
-[Omniscient](https://github.com/omniscientjs/omniscient). It's best explained
-by example:
-
-```js
-var structure = immstruct({
-  someBox: { message: 'Hello World!' }
-});
-
-// Create a reference to 'message':
-var ref = structure.reference(['someBox', 'message']);
-
-// Get cursor from reference:
-ref.cursor();
-
-// Update cursor
-var newCursor = ref.cursor().update(function () { return 'Hello, World!'; });
-
-// Get cursor again, and it's updated:
-console.log(ref.cursor().deref());
-//=> Hello, World!
-
-// Also
-console.log(ref.cursor().deref() === newCursor.deref());
-```
-
-This is also true, even if you change a cursor without it's reference:
+While Immutable.js cursors are immutable, Immstruct lets you create references
+to a piece of data from where cursors will always be fresh.
 
 ```js
 
 var structure = immstruct({ 'foo': 'bar' });
-
 var ref = structure.reference('foo');
-structure.cursor('foo').update(function () { return 'updated'; });
+
+var newCursor = structure.cursor('foo').update(function () { return 'updated'; });
+console.log(newCursor.deref()) //=> 'updated'
 
 console.log(ref.cursor().deref()) //=> 'updated'
 ```
 
-Reference coursors will also allow for listening on alterations on specific
-paths:
+Updating a cursor created from a reference will also update the underlying structure.
+
+This offers benefits similar to that of [Om](https://github.com/omcljs/om/wiki/Advanced-Tutorial#reference-cursors)'s `reference cursors`, where
+[React.js](http://facebook.github.io/react/) or [Omniscient](https://github.com/omniscientjs/omniscient/) components can observe pieces of application
+state without it being passed as cursors in props from their parent components.
+
+References also allow for listeners that fire when their path or the path of sub-cursors changes:
 
 ```js
-// Create a reference to 'message':
+var structure = immstruct({
+  someBox: { message: 'Hello World!' }
+});
 var ref = structure.reference(['someBox']);
 
 var unobserve = ref.observe(function () {
-  // Will be updated when 'someBox' is changed, or
-  // if ['someBox', 'message'] is changed.
+  // Called when data the path 'someBox' is changed.
+  // Also called when the data at ['someBox', 'message'] is changed.
 });
 
-// Do some updates
+// Update the data using the ref
 ref.cursor().update(function () { return 'updated'; });
 
-// When you want to remove listener:
+// Update the data using the initial structure
+structure.cursor(['someBox', 'message']).update(function () { return 'updated again'; });
+
+// Remove the listener
 unobserve();
 ```
 
-**Note: The parents change listeners are called when sub-cursors are changed.**
+### Notes
 
-Also note, cursors are still immutable. If you store a cursor from `reference.cursor()`
-it will get "old", and you can rewrite newer information.
+Parents' change listeners are also called when sub-cursors are changed.
+
+Cursors created from references are still immutable. If you keep a cursor from
+a `var cursor = reference.cursor()` around, the `cursor` will still point to the data
+at time of cursor creation. Updating it may rewrite newer information.
 
 ## Usage Undo/Redo
 
