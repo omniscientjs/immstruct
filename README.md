@@ -21,12 +21,18 @@ structure.on('swap', function (newStructure, oldStructure) {
   // React.render(App({ cursor: structure.cursor() }), document.body);
 });
 
-// Remember: Cursor is immutable. Update cursor.
-var cursor = structure.cursor(['a', 'b', 'c']).update(function (x) {
+var cursor = structure.cursor(['a', 'b', 'c']);
+
+// Update the value at the cursor. As cursors are immutable, this returns a new cursor that points to the new data
+var newCursor = cursor.update(function (x) {
   return x + 1;
 });
 
-console.log(cursor.deref()); //=> 2
+// The value of the old `cursor` to is still `1`
+console.log(cursor.deref()); //=> 1
+
+// `newCursor` points to the new data
+console.log(newCursor.deref()); //=> 2
 ```
 
 
@@ -36,12 +42,12 @@ var immstruct = require('immstruct');
 var structure = immstruct('myKey');
 
 var cursor = structure.cursor(['a', 'b', 'c']);
-cursor = cursor.update(function (x) {
+
+var updatedCursor = cursor.update(function (x) { // triggers `swap` in somefile.js
   return x + 1;
 });
-// Will trigger `swap` in somefile.js
 
-console.log(cursor.deref()); //=> 3
+console.log(updatedCursor.deref()); //=> 3
 ```
 
 ## Reference Cursors
