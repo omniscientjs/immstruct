@@ -224,7 +224,7 @@ See [Immutable.js cursors](https://github.com/facebook/immutable-js/tree/master/
 **Note:** You **probably never** want to use use `structure.current.cursor()`
 directly, as this won't add event handlers for when the cursor is updated.
 
-#### `Structure#reference([path : Array<string>]) : CursorReference`
+#### `Structure#reference([path : Array<string>]) : Reference`
 
 Creates a [reference cursor](#reference-cursors) for having access to
 cursors which are always up to date with the latest structure.
@@ -235,13 +235,13 @@ var ref = structure.reference(['some', 'path', 'here']);
 var cursor = ref.cursor();
 ```
 
-##### CursorReference#cursor([path : Array<string>]) : Cursor (Immutable.js)
+##### Reference#cursor([path : Array<string>]) : Cursor (Immutable.js)
 
 Creates a (sub-)cursor from the reference. If path is provided, a sub-cursor
 is created, without a path, the latest and greatest cursor of the path
 provided to the reference is created.
 
-##### CursorReference#observe([eventType : String, ]listener : Function) : unobserve : Function
+##### Reference#observe([eventType : String, ]listener : Function) : unobserve : Function
 
 Add a listener for when the data the cursor (or any sub-cursors) in the reference
 changes.
@@ -252,11 +252,11 @@ means every change.
 
 Returns a function to remove observer.
 
-##### CursorReference#unobserveAll()
+##### Reference#unobserveAll()
 
 Remove all observers for this reference.
 
-##### CursorReference#destroy()
+##### Reference#destroy()
 
 Clean up all, remove all listeners and unset all loose variables to clear up
 memory.
