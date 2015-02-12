@@ -1,21 +1,52 @@
 /**
-* immstruct v1.3.1
+* immstruct v1.4.0
 * Authors: Mikael Brevik, @torgeir
 ***************************************/
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.immstruct=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var Structure = _dereq_('./src/structure');
 
-module.exports = function (key, data) {
-  return getInstance({
+function Immstruct () {
+  if (!(this instanceof Immstruct)) {
+    return new Immstruct();
+  }
+
+  this.instances = {};
+}
+
+Immstruct.prototype.get = function (key, data) {
+  return getInstance(this, {
     key: key,
     data: data
   });
 };
 
-module.exports.instances = {};
+Immstruct.prototype.clear = function () {
+  this.instances = {};
+};
+
+Immstruct.prototype.remove = function (key) {
+  return delete this.instances[key];
+};
+
+Immstruct.prototype.withHistory = function (key, data) {
+  return getInstance(this, {
+    key: key,
+    data: data,
+    history: true
+  });
+};
+
+var inst = new Immstruct();
+
+module.exports = function (key, data) {
+  return getInstance(inst, {
+    key: key,
+    data: data
+  });
+};
 
 module.exports.withHistory = function (key, data) {
-  return getInstance({
+  return getInstance(inst, {
     key: key,
     data: data,
     history: true
@@ -23,30 +54,29 @@ module.exports.withHistory = function (key, data) {
 };
 
 module.exports.Structure = Structure;
+module.exports.Immstruct = Immstruct;
+module.exports.clear = inst.clear.bind(inst);
+module.exports.remove = inst.remove.bind(inst);
+Object.defineProperty(module.exports, 'instances', {
+  get: function() { return inst.instances; },
+  enumerable: true,
+  configurable: true
+});
 
-function getInstance (options) {
+function getInstance (obj, options) {
   if (typeof options.key === 'object') {
     options.data = options.key;
     options.key = void 0;
   }
 
-  if (options.key && module.exports.instances[options.key]) {
-    return module.exports.instances[options.key];
+  if (options.key && obj.instances[options.key]) {
+    return obj.instances[options.key];
   }
 
   var newInstance = new Structure(options);
-  module.exports.instances[newInstance.key] = newInstance;
+  obj.instances[newInstance.key] = newInstance;
   return newInstance;
 }
-
-module.exports.clear = function () {
-  module.exports.instances = {};
-};
-
-module.exports.remove = function (key) {
-  return delete module.exports.instances[key];
-};
-
 },{"./src/structure":5}],2:[function(_dereq_,module,exports){
 'use strict';
 
@@ -596,6 +626,7 @@ var utils = _dereq_('./utils');
  * ## Public API.
  *   Constructor({ history: bool, key: string, data: structure|object })
  *   .cursor(path)
+ *   .reference(path)
  *   .forceHasSwapped(newData, oldData, keyPath)
  *   .undo(steps)
  *   .redo(steps)
@@ -603,6 +634,8 @@ var utils = _dereq_('./utils');
  *
  ************************************/
 function Structure (options) {
+  var self = this;
+
   options = options || {};
   if (!(this instanceof Structure)) {
     return new Structure(options);
@@ -620,6 +653,16 @@ function Structure (options) {
     this._currentRevision = 0;
   }
 
+  this._pathListeners = [];
+  this.on('swap', function (newData, oldData, keyPath) {
+    listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
+      fns.forEach(function (fn) {
+        if (typeof fn !== 'function') return;
+        fn(newData, oldData, keyPath);
+      });
+    });
+  });
+
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
@@ -634,7 +677,6 @@ Structure.prototype.cursor = function (path) {
   }
 
   var changeListener = function (newRoot, oldRoot, path) {
-
     if(self.current === oldRoot) {
       return self.current = newRoot;
     }
@@ -653,6 +695,67 @@ Structure.prototype.cursor = function (path) {
   changeListener = handleSwap(this, changeListener);
   changeListener = handlePersisting(this, changeListener);
   return Cursor.from(self.current, path, changeListener);
+};
+
+Structure.prototype.reference = function (path) {
+  if (isCursor(path) && path._keyPath) {
+    path = path._keyPath;
+  }
+  var self = this, pathId = pathString(path);
+  var listenerNs = self._pathListeners[pathId];
+  var cursor = this.cursor(path);
+
+  var changeListener = function (newRoot, oldRoot, changedPath) { cursor = self.cursor(path); };
+  var referenceListeners = [changeListener];
+  this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
+
+  return {
+    observe: function (eventName, newFn) {
+      if (typeof eventName === 'function') {
+        newFn = eventName;
+        eventName = void 0;
+      }
+      if (this._dead || typeof newFn !== 'function') return;
+      if (eventName && eventName !== 'swap') {
+        newFn = onlyOnEvent(eventName, newFn);
+      }
+
+      self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
+      referenceListeners = referenceListeners.concat(newFn);
+
+      return function unobserve () {
+        var fnIndex = self._pathListeners[pathId].indexOf(newFn);
+        var localListenerIndex = referenceListeners.indexOf(newFn);
+
+        if (referenceListeners[localListenerIndex] === newFn) {
+          referenceListeners.splice(localListenerIndex, 1);
+        }
+
+        if (!self._pathListeners[pathId]) return;
+        if (self._pathListeners[pathId][fnIndex] !== newFn) return;
+        self._pathListeners[pathId].splice(fnIndex, 1);
+      };
+    },
+    cursor: function (subPath) {
+      if (subPath) return cursor.cursor(subPath);
+      return cursor;
+    },
+    unobserveAll: function () {
+      removeAllListenersBut(self, pathId, referenceListeners, changeListener);
+      referenceListeners = [changeListener];
+    },
+    destroy: function () {
+      removeAllListenersBut(self, pathId, referenceListeners);
+      referenceListeners = void 0;
+      cursor = void 0;
+
+      this._dead = true;
+      this.observe = void 0;
+      this.unobserveAll = void 0;
+      this.cursor = void 0;
+      this.destroy = void 0;
+    }
+  };
 };
 
 Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
@@ -742,19 +845,10 @@ function handlePersisting (emitter, fn) {
   return function (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
     if(newData === oldData) return newStructure;
+    var info = analyze(newData, oldData, path);
 
-    var oldObject = oldData && oldData.getIn(path);
-    var newObject = newStructure && newStructure.getIn(path);
-
-    var inOld = oldData && hasIn(oldData, path);
-    var inNew = newStructure && hasIn(newStructure, path);
-
-    if (inOld && !inNew) {
-      emitter.emit('delete', path, oldObject);
-    } else if (inOld && inNew) {
-      emitter.emit('change', path, newObject, oldObject);
-    } else if (!inOld && inNew) {
-      emitter.emit('add', path, newObject);
+    if (info.eventName) {
+      emitter.emit.apply(emitter, [info.eventName].concat(info.arguments));
     }
     return newStructure;
   };
@@ -764,11 +858,76 @@ function handlePersisting (emitter, fn) {
  * Private helpers.
  ***********************************/
 
+function removeAllListenersBut(self, pathId, listeners, except) {
+  if (!listeners) return;
+  listeners.forEach(function (fn) {
+    if (except && fn === except) return;
+    var index = self._pathListeners[pathId].indexOf(fn);
+    self._pathListeners[pathId].splice(index, 1);
+  });
+}
+
+function analyze (newData, oldData, path) {
+  var oldObject = oldData && oldData.getIn(path);
+  var newObject = newData && newData.getIn(path);
+
+  var inOld = oldData && hasIn(oldData, path);
+  var inNew = newData && hasIn(newData, path);
+
+  var arguments, eventName;
+
+  if (inOld && !inNew) {
+    eventName = 'delete';
+    arguments = [path, oldObject];
+  } else if (inOld && inNew) {
+    eventName = 'change';
+    arguments = [path, newObject, oldObject];
+  } else if (!inOld && inNew) {
+    eventName = 'add';
+    arguments = [path, newObject];
+  }
+
+  return {
+    eventName: eventName,
+    arguments: arguments
+  };
+}
+
+
 // Check if path exists.
 var NOT_SET = {};
 function hasIn(cursor, path) {
   if(cursor.hasIn) return cursor.hasIn(path);
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
+}
+
+function pathString(path) {
+  var topLevel = 'global';
+  if (!path || !path.length) return topLevel;
+  return [topLevel].concat(path).join('|');
+}
+
+function listListenerMatching (listeners, basePath) {
+  var newListeners = [];
+  for (var key in listeners) {
+    if (!listeners.hasOwnProperty(key)) return;
+    if (basePath.indexOf(key) !== 0) continue;
+    newListeners.push(listeners[key]);
+  }
+
+  return newListeners;
+}
+
+function onlyOnEvent(eventName, fn) {
+  return function (newData, oldData, keyPath) {
+    var info = analyze(newData, oldData, keyPath);
+    if (info.eventName !== eventName) return;
+    return fn(newData, oldData, keyPath);
+  };
+}
+
+function isCursor (potential) {
+  return potential && typeof potential.deref === 'function';
 }
 
 // Check if passed structure is existing immutable structure.
