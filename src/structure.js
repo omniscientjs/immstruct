@@ -199,13 +199,13 @@ var possiblyEmitAnimationFrameEvent = (function () {
     return function () {};
   }
 
-  return function requestAnimationFrameEmitter (emitter, newStructure, oldData) {
+  return function requestAnimationFrameEmitter (emitter, newStructure, oldData, keyPath) {
     if (queuedChange) return;
     queuedChange = true;
 
     requestAnimationFrame(function () {
       queuedChange = false;
-      emitter.emit('next-animation-frame', newStructure, oldData);
+      emitter.emit('next-animation-frame', newStructure, oldData, keyPath);
     });
   };
 }());
