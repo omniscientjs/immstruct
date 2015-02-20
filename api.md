@@ -342,7 +342,9 @@ If newData is `null` current will be used.
 ### `structure.undo(steps)`
 
 Undo IFF history is activated and there are steps to undo. Returns new current
-immutable structure. **Will NOT emit swap when undo**.
+immutable structure.
+
+**Will NOT emit swap when redo. You have to do this yourself**.
 
 Define number of steps to undo in param.
 
@@ -361,7 +363,8 @@ Define number of steps to undo in param.
 ### `structure.redo(head)`
 
 Redo IFF history is activated and you can redo. Returns new current immutable structure.
-Define number of steps to redo in param. **Will NOT emit swap when redo**.
+Define number of steps to redo in param.
+**Will NOT emit swap when redo. You have to do this yourself**.
 
 
 ### Parameters
@@ -380,7 +383,7 @@ Define number of steps to redo in param. **Will NOT emit swap when redo**.
 Undo IFF history is activated and passed `structure` exists in history.
 Returns the same immutable structure as passed as argument.
 
-**Will NOT emit swap when redo**.
+**Will NOT emit swap after undo. You have to do this yourself**.
 
 
 ### Parameters
@@ -392,5 +395,11 @@ Returns the same immutable structure as passed as argument.
 
 
 **Returns** `Object`, New Immutable structure after undo
+
+
+### `undefined`
+
+Swap event. Called everytime a value is swapped using a cursor from immstruct
+
 
 

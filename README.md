@@ -130,9 +130,7 @@ console.log(structure.cursor('foo').deref()); //=> 'hello'
 
 ```
 
-## API
-
-### `immstruct([name : String][jsStructure : Object]) : Structure`
+## Examples
 
 Creates or retrieves [structures](#structure--eventemitter).
 
@@ -173,136 +171,11 @@ var localImmstruct = new immstruct.Immstruct()
 var structure = localImmstruct.get('someKey', { my: 'object' });
 ```
 
-#### Methods and accessers
+## API Reference
 
-##### `immstruct#clear()`
+See [API Reference](./api.md).
 
-Removes all instances.
-
-##### `immstruct#remove(name : String) : bool`
-
-Removes specified instance. Returns result of the delete operation.
-
-##### `immstruct#instances : Structure[]`
-
-Access the instances internals.
-
-### `Structure : EventEmitter`
-
-You can create a bare-bone `Structure` without using the instance management
-of the `immstruct` function call. Require the structure directly:
-
-```js
-var Structure = require('immstruct/structure');
-var s = new Structure({
-  key: 'foo', // default random string
-  data: someObject, // default empty object
-  withHistory: true // default `false`
-})
-```
-
-A structure is the a wrapped Immutable.js instance. You can access the inner
-immutable data by calling `myStructure.current`. A structure is an
-event emitter. See [events](#structure-events)
-
-#### `Structure#key : String`
-Returns the access key for structure. Can be used to get the instance by using
-`immstruct(givenKey)`. If you don't use a key while creating the structure with
-immstruct, a random key will be generated. In that case, you can use this
-property to retrieve the used key.
-
-#### `Structure#current : Immutable.js`
-
-Returns the internal Immutable.js structure.
-
-See [Immutable.js](https://github.com/facebook/immutable-js).
-
-#### `Structure#cursor([path : Array<string>]) : Cursor (Immutable.js)`
-
-Creates a cursor to a part of a Immutable.js structure based on a array
-of paths. If no path is given the top node is used.
-
-Example:
-```js
-var cursor = structure.cursor(['some', 'path', 'here']);
-cursor.get('subPath').update(updateFunction);
-```
-
-See [Immutable.js cursors](https://github.com/facebook/immutable-js/tree/master/contrib/cursor).
-
-**Note:** You **probably never** want to use use `structure.current.cursor()`
-directly, as this won't add event handlers for when the cursor is updated.
-
-#### `Structure#reference([path : Array<string>]) : Reference`
-
-Creates a [reference cursor](#reference-cursors) for having access to
-cursors which are always up to date with the latest structure.
-
-Example:
-```js
-var ref = structure.reference(['some', 'path', 'here']);
-var cursor = ref.cursor();
-```
-
-##### Reference#cursor([path : Array<string>]) : Cursor (Immutable.js)
-
-Creates a (sub-)cursor from the reference. If path is provided, a sub-cursor
-is created, without a path, the latest and greatest cursor of the path
-provided to the reference is created.
-
-##### Reference#observe([eventType : String, ]listener : Function) : unobserve : Function
-
-Add a listener for when the data the cursor (or any sub-cursors) in the reference
-changes.
-
-Optional `eventType` will define what type of change to listen for; `swap`, `add`, `change` and `delete.
-Same as [Structure Events as defined below](#structure-events). If no event is passed, `swap` is used, which
-means every change.
-
-Returns a function to remove observer.
-
-##### Reference#unobserveAll()
-
-Remove all observers for this reference.
-
-##### Reference#destroy()
-
-Clean up all, remove all listeners and unset all loose variables to clear up
-memory.
-
-#### `Structure#forceHasSwapped() : void`
-
-Force triggers the swap events. Useful when you want to force re-render
-design components or view layers.
-
-
-### With History
-
-Instantiate structure using `withHistory` instead of default constructor:
-
-```
-var structure = immstruct.withHistory({ 'foo': 'bar' });
-```
-
-Same signature as normal constructor:
-
-```
-immstruct.withHistory([name : String][jsStructure : Object]) : Structure
-```
-
-#### `Structure#undo(steps: int) : Structure`
-
-Undo number of steps. Step defaults to one step. Returns structure.
-
-#### `Structure#undoUntil(obj: Structure) : Structure`
-
-Undo number until structure passed as argument. Returns structure.
-
-#### `Structure#redo(steps: int) : Structure`
-
-Redo number of steps. Step defaults to one step. Returns structure.
-
-### Structure Events
+## Structure Events
 
 A Structure object is an event emitter and emits the following events:
 
