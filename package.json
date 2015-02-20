@@ -7,7 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "mocha -R spec tests/*_test.js"
+    "test": "mocha -R spec tests/*_test.js",
+    "build-docs": "cat index.js src/structure.js | dox -r | doxme > api.md"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,8 @@
     "browserify-shim": "^3.8.2",
     "chai": "^1.10.0",
     "derequire": "^1.2.1",
+    "dox": "^0.6.1",
+    "doxme": "git://github.com/mikaelbr/doxme#patch-1",
     "mocha": "^2.0.1",
     "uglify-js": "^2.4.16"
   },
