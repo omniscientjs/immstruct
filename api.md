@@ -11,6 +11,13 @@ of Structure instances.
     var structure = immstruct.get({ data: });
 
 
+### Properties
+
+| property    | type  | description                      |
+| ----------- | ----- | -------------------------------- |
+| `instances` | Array | Array of `Structure` instances.  |
+
+
 
 **Returns** `Immstruct`, 
 
@@ -29,10 +36,10 @@ var structure = immstruct.get('myStruct', { foo: 'Hello' });
 
 ### Parameters
 
-| parameter | type             | description                             |
-| --------- | ---------------- | --------------------------------------- |
-| `[key]`   | String           | _optional:_ - defaults to random string |
-| `[data]`  | Object,Immutable | _optional:_ - defaults to empty data    |
+| param    | type             | description                             |
+| -------- | ---------------- | --------------------------------------- |
+| `[key]`  | String           | _optional:_ - defaults to random string |
+| `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
 
@@ -65,9 +72,9 @@ Provided by key
 
 ### Parameters
 
-| parameter | type   | description |
-| --------- | ------ | ----------- |
-| `key`     | String |             |
+| param | type   | description |
+| ----- | ------ | ----------- |
+| `key` | String |             |
 
 
 
@@ -90,10 +97,10 @@ If no key is provided, a random key will be generated.
 
 ### Parameters
 
-| parameter | type             | description                             |
-| --------- | ---------------- | --------------------------------------- |
-| `[key]`   | String           | _optional:_ - defaults to random string |
-| `[data]`  | Object,Immutable | _optional:_ - defaults to empty data    |
+| param    | type             | description                             |
+| -------- | ---------------- | --------------------------------------- |
+| `[key]`  | String           | _optional:_ - defaults to random string |
+| `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
 
@@ -123,10 +130,10 @@ is provided, a random key will be generated.
 
 ### Parameters
 
-| parameter | type             | description                             |
-| --------- | ---------------- | --------------------------------------- |
-| `[key]`   | String           | _optional:_ - defaults to random string |
-| `[data]`  | Object,Immutable | _optional:_ - defaults to empty data    |
+| param    | type             | description                             |
+| -------- | ---------------- | --------------------------------------- |
+| `[key]`  | String           | _optional:_ - defaults to random string |
+| `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
 
@@ -159,9 +166,19 @@ Creates a new `Structure` instance. Also accessible through
 
 ### Parameters
 
-| parameter   | type                                                                                   | description                                                                            |
+| param       | type                                                                                   | description                                                                            |
 | ----------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `[options]` | { key: <code>String</code>, data: <code>Object</code>, history: <code>Boolean</code> } | _optional:_ - defaults to random key and empty data (immutable structure). No history  |
+
+
+### Properties
+
+| property  | type             | description                     |
+| --------- | ---------------- | ------------------------------- |
+| `history` | Immutable.List   | `Immutable.List` with history.  |
+| `current` | Object,Immutable | Provided data as immutable data |
+| `key`     | String           | Generated or provided key. 
+    |
 
 
 
@@ -186,9 +203,9 @@ See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/
 
 ### Parameters
 
-| parameter | type         | description                                                                              |
-| --------- | ------------ | ---------------------------------------------------------------------------------------- |
-| `[path]`  | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+| param    | type         | description                                                                              |
+| -------- | ------------ | ---------------------------------------------------------------------------------------- |
+| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
 
 
 
@@ -230,9 +247,9 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Parameters
 
-| parameter | type         | description                                                                              |
-| --------- | ------------ | ---------------------------------------------------------------------------------------- |
-| `[path]`  | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+| param    | type         | description                                                                              |
+| -------- | ------------ | ---------------------------------------------------------------------------------------- |
+| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
 
 
 
@@ -264,7 +281,7 @@ Event names can be either
 
 ### Parameters
 
-| parameter     | type     | description                                 |
+| param         | type     | description                                 |
 | ------------- | -------- | ------------------------------------------- |
 | `[eventName]` | String   | _optional:_ - Type of change                |
 | `callback`    | Function | - Callback when referenced data is swapped  |
@@ -292,7 +309,7 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Parameters
 
-| parameter   | type   | description                                  |
+| param       | type   | description                                  |
 | ----------- | ------ | -------------------------------------------- |
 | `[subpath]` | String | _optional:_ - Subpath to a deeper structure  |
 
@@ -328,7 +345,7 @@ If newData is `null` current will be used.
 
 ### Parameters
 
-| parameter | type   | description                                               |
+| param     | type   | description                                               |
 | --------- | ------ | --------------------------------------------------------- |
 | `newData` | Object | - Immutable object for the new data to emit               |
 | `oldData` | Object | - Immutable object for the old data to emit               |
@@ -351,9 +368,9 @@ Define number of steps to undo in param.
 
 ### Parameters
 
-| parameter | type   | description                |
-| --------- | ------ | -------------------------- |
-| `steps`   | Number | - Number of steps to undo  |
+| param   | type   | description                |
+| ------- | ------ | -------------------------- |
+| `steps` | Number | - Number of steps to undo  |
 
 
 
@@ -369,9 +386,9 @@ Define number of steps to redo in param.
 
 ### Parameters
 
-| parameter | type   | description                           |
-| --------- | ------ | ------------------------------------- |
-| `head`    | Number | - Number of steps to head to in redo  |
+| param  | type   | description                           |
+| ------ | ------ | ------------------------------------- |
+| `head` | Number | - Number of steps to head to in redo  |
 
 
 
@@ -388,7 +405,7 @@ Returns the same immutable structure as passed as argument.
 
 ### Parameters
 
-| parameter   | type   | description                          |
+| param       | type   | description                          |
 | ----------- | ------ | ------------------------------------ |
 | `structure` | Object | - Immutable structure to redo until  |
 
@@ -396,10 +413,6 @@ Returns the same immutable structure as passed as argument.
 
 **Returns** `Object`, New Immutable structure after undo
 
-
-### `undefined`
-
-Swap event. Called everytime a value is swapped using a cursor from immstruct
-
+## Private members 
 
 

@@ -41,7 +41,7 @@
     "chai": "^1.10.0",
     "derequire": "^1.2.1",
     "dox": "^0.6.1",
-    "doxme": "git://github.com/mikaelbr/doxme#patch-1",
+    "doxme": "git://github.com/mikaelbr/doxme#dev",
     "mocha": "^2.0.1",
     "uglify-js": "^2.4.16"
   },
