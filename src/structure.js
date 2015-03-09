@@ -426,7 +426,7 @@ function handlePersisting (emitter, fn) {
     var info = analyze(newData, oldData, path);
 
     if (info.eventName) {
-      emitter.emit.apply(emitter, [info.eventName].concat(info.arguments));
+      emitter.emit.apply(emitter, [info.eventName].concat(info.args));
     }
     return newStructure;
   };
@@ -450,22 +450,22 @@ function analyze (newData, oldData, path) {
   var inOld = oldData && hasIn(oldData, path);
   var inNew = newData && hasIn(newData, path);
 
-  var arguments, eventName;
+  var args, eventName;
 
   if (inOld && !inNew) {
     eventName = 'delete';
-    arguments = [path, oldObject];
+    args = [path, oldObject];
   } else if (inOld && inNew) {
     eventName = 'change';
-    arguments = [path, newObject, oldObject];
+    args = [path, newObject, oldObject];
   } else if (!inOld && inNew) {
     eventName = 'add';
-    arguments = [path, newObject];
+    args = [path, newObject];
   }
 
   return {
     eventName: eventName,
-    arguments: arguments
+    args: args
   };
 }
 
