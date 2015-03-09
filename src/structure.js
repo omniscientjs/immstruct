@@ -1,3 +1,5 @@
+'use strict';
+
 var Immutable = require('immutable');
 var Cursor = require('immutable/contrib/cursor');
 var EventEmitter = require('eventemitter3').EventEmitter;
