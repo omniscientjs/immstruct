@@ -1,4 +1,4 @@
-
+'use strict';
 
 module.exports.generateRandomKey = function (len) {
   len = len || 10;
