@@ -63,17 +63,17 @@ Structure.prototype.cursor = function (path) {
 
   var changeListener = function (newRoot, oldRoot, path) {
     if(self.current === oldRoot) {
-      return self.current = newRoot;
+      self.current = newRoot;
+    } else if(!hasIn(newRoot, path)) {
+      // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
+      // changes at path `path`, and sync this to `self.current`.
+      self.current = self.current.removeIn(path);
+    } else {
+      // Update an existing path or add a new path within the current map.
+      self.current = self.current.setIn(path, newRoot.getIn(path));
     }
-    // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
-    // changes at path `path`, and sync this to `self.current`.
 
-    if(!hasIn(newRoot, path)) {
-      return self.current = self.current.removeIn(path);
-    }
-
-    // Update an existing path or add a new path within the current map.
-    return self.current = self.current.setIn(path, newRoot.getIn(path));
+    return self.current;
   };
 
   changeListener = handleHistory(this, changeListener);
@@ -145,7 +145,7 @@ Structure.prototype.reference = function (path) {
 
 Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
   this.emit('swap', newData || this.current, oldData, keyPath);
-  possiblyEmitAnimationFrameEvent(this, newData || this.current, oldData, keyPath)
+  possiblyEmitAnimationFrameEvent(this, newData || this.current, oldData, keyPath);
 };
 
 Structure.prototype.undo = function(back) {
