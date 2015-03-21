@@ -1,5 +1,3 @@
-Function.prototype.bind = require('function-bind');
-
 var chai = require('chai');
 chai.should();
 
