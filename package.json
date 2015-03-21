@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "mocha -R spec tests/*_test.js",
+    "testling": "testling",
     "build-docs": "cat index.js src/structure.js | dox -r | doxme > api.md"
   },
   "repository": {
@@ -20,6 +21,15 @@
     "structure",
     "properties"
   ],
+  "testling": {
+    "harness": "mocha",
+    "files": "tests/*_test.js",
+    "browsers": [
+      "ie/8..latest",
+      "chrome/latest",
+      "firefox/latest"
+    ]
+  },
   "author": "Mikael Brevik, @torgeir",
   "contributors": [
     "Mikael Brevik",
@@ -42,7 +52,9 @@
     "derequire": "^1.2.1",
     "dox": "^0.6.1",
     "doxme": "git://github.com/mikaelbr/doxme#dev",
+    "function-bind": "^1.0.2",
     "mocha": "^2.0.1",
+    "testling": "^1.7.1",
     "uglify-js": "^2.4.16"
   },
   "browserify-shim": {

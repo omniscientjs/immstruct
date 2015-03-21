@@ -1,9 +1,12 @@
+Function.prototype.bind = require('function-bind');
+
 var chai = require('chai');
 var expect = chai.expect;
 chai.should();
 
 var Immutable = require('immutable');
 var Structure = require('../src/structure');
+
 
 describe('structure', function () {
 
