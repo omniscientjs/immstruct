@@ -488,7 +488,7 @@ function pathString(path) {
 function listListenerMatching (listeners, basePath) {
   var newListeners = [];
   for (var key in listeners) {
-    if (!listeners.hasOwnProperty(key)) return;
+    if (!listeners.hasOwnProperty(key)) continue;
     if (basePath.indexOf(key) !== 0) continue;
     newListeners.push(listeners[key]);
   }
