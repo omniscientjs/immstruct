@@ -1,9 +1,8 @@
 'use strict';
 
 var Immutable = require('immutable');
-var Cursor = require('immutable/contrib/cursor');
+var Cursor = require('immutable/contrib/cursor/index');
 var EventEmitter = require('eventemitter3').EventEmitter;
-var inherits = require('inherits');
 var utils = require('./utils');
 
  /**
@@ -69,7 +68,6 @@ function Structure (options) {
       });
     });
   });
-
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
@@ -522,4 +520,13 @@ function isImmutableStructure (data) {
 
 function immutableSafeCheck (ns, method, data) {
   return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
+}
+
+function inherits (c, p) {
+  var e = {};
+  Object.getOwnPropertyNames(c.prototype).forEach(function (k) {
+    e[k] = Object.getOwnPropertyDescriptor(c.prototype, k)
+  });
+  c.prototype = Object.create(p.prototype, e)
+  c.super = p
 }
