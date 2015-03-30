@@ -792,6 +792,36 @@ describe('structure', function () {
         ref.cursor().deref().should.equal(newCursor.deref());
       });
 
+      it('should trigger swap', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe('swap', function (keyPath, newData, oldData) {
+          keyPath.should.eql(['foo']);
+          newData.toJS().should.eql({ 'foo': 'updated' });
+          oldData.toJS().should.eql({ 'foo': 'bar' });
+          done();
+        });
+        structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should trigger swap implicit', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe(function (keyPath, newData, oldData) {
+          keyPath.should.eql(['foo']);
+          newData.toJS().should.eql({ 'foo': 'updated' });
+          oldData.toJS().should.eql({ 'foo': 'bar' });
+          done();
+        });
+        structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
       it('should trigger only change events when specifying event type', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }
@@ -800,7 +830,12 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('change', function () { done(); });
+        ref.observe('change', function (keyPath, newData, oldData) {
+          keyPath.should.eql(['foo']);
+          newData.should.equal('updated');
+          oldData.should.equal('bar');
+          done();
+        });
         structure.cursor('foo').update(function () { return 'updated'; });
       });
 
@@ -812,7 +847,11 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('delete', function () { done(); });
+        ref.observe('delete', function (keyPath, oldData) {
+          keyPath.should.eql(['foo']);
+          oldData.should.eql('bar');
+          done();
+        });
         structure.cursor().remove('foo');
       });
 
@@ -824,7 +863,11 @@ describe('structure', function () {
         var ref = structure.reference('bar');
         ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('add', function () { done(); });
+        ref.observe('add', function (keyPath, newData) {
+          keyPath.should.eql(['bar']);
+          newData.should.eql('baz');
+          done();
+        });
         structure.cursor(['bar']).update(function (state) {
           return 'baz';
         });

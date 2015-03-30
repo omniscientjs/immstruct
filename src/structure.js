@@ -64,7 +64,7 @@ function Structure (options) {
     listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
       fns.forEach(function (fn) {
         if (typeof fn !== 'function') return;
-        fn(newData, oldData, keyPath);
+        fn(keyPath, newData, oldData);
       });
     });
   });
@@ -496,10 +496,10 @@ function listListenerMatching (listeners, basePath) {
 }
 
 function onlyOnEvent(eventName, fn) {
-  return function (newData, oldData, keyPath) {
+  return function (keyPath, newData, oldData) {
     var info = analyze(newData, oldData, keyPath);
     if (info.eventName !== eventName) return;
-    return fn(newData, oldData, keyPath);
+    return fn.apply(fn, info.args);
   };
 }
 
