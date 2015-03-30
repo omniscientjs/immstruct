@@ -23,7 +23,18 @@ describe('structure', function () {
       cursor.deref().should.equal('bar');
     });
 
-  })
+
+    it('should allow values as key paths', function () {
+      var s = new Structure({ data: {'': 3, a: {'': 5}} });
+      s.cursor().cursor('').deref().should.equal(3);
+      s.cursor('').deref().should.equal(3);
+
+      var r = s.reference('a');
+      r.cursor().cursor('').deref().should.equal(5);
+      r.cursor('').deref().should.equal(5);
+    });
+
+  });
 
   describe('existing immutable structure', function () {
 

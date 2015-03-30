@@ -96,7 +96,7 @@ module.exports = Structure;
  */
 Structure.prototype.cursor = function (path) {
   var self = this;
-  path = path || [];
+  path = valToKeyPath(path) || [];
 
   if (!this.current) {
     throw new Error('No structure loaded.');
@@ -250,6 +250,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Cursor} Immutable.js cursor
      */
     cursor: function (subPath) {
+      subPath = valToKeyPath(subPath);
       if (subPath) return cursor.cursor(subPath);
       return cursor;
     },
@@ -520,6 +521,15 @@ function isImmutableStructure (data) {
 
 function immutableSafeCheck (ns, method, data) {
   return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
+}
+
+function valToKeyPath(val) {
+  if (typeof val === 'undefined') {
+    return val;
+  }
+  return Array.isArray(val) ? val :
+    immutableSafeCheck('Iterable', 'isIterable', val) ?
+      val.toArray() : [val];
 }
 
 function inherits (c, p) {
