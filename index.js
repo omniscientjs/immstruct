@@ -95,23 +95,33 @@ Immstruct.prototype.remove = function (key) {
  * Provide optional key to be able to retrieve it from list of instances.
  * If no key is provided, a random key will be generated.
  *
+ * Provide optional limit to cap the last number of history references
+ * that will be kept. Once limit is reached, a new history record
+ * shifts off the oldest record. The default if omitted is Infinity.
+ * Setting to 0 is the as not having history enabled in the first place.
+ *
  * ### Examples:
  *
  *     var immstruct = require('immstruct');
+ *     var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
+ *     var structure = immstruct.withHistory(10, { foo: 'Hello' });
  *     var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
+ *     var structure = immstruct.withHistory({ foo: 'Hello' });
  *
  * @param {String} [key] - defaults to random string
+ * @param {Number} [limit] - defaults to Infinity
  * @param {Object|Immutable} [data] - defaults to empty data
  *
  * @module immstruct.withHistory
  * @api public
  * @returns {Structure}
  */
-Immstruct.prototype.withHistory = function (key, data) {
+Immstruct.prototype.withHistory = function (key, limit, data) {
   return getInstance(this, {
     key: key,
     data: data,
-    history: true
+    history: true,
+    historyLimit: limit
   });
 };
 
@@ -153,11 +163,12 @@ module.exports = function (key, data) {
   });
 };
 
-module.exports.withHistory = function (key, data) {
+module.exports.withHistory = function (key, limit, data) {
   return getInstance(inst, {
     key: key,
     data: data,
-    history: true
+    history: true,
+    historyLimit: limit
   });
 };
 
@@ -176,6 +187,13 @@ function getInstance (obj, options) {
   if (typeof options.key === 'object') {
     options.data = options.key;
     options.key = void 0;
+  } else if (typeof options.key === 'number') {
+    options.data = options.historyLimit;
+    options.historyLimit = options.key;
+    options.key = void 0;
+  } else if (typeof options.historyLimit === 'object') {
+    options.data = options.historyLimit;
+    options.historyLimit = void 0;
   }
 
   if (options.key && obj.instances[options.key]) {

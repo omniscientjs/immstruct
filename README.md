@@ -116,7 +116,9 @@ at time of cursor creation. Updating it may rewrite newer information.
 ## Usage Undo/Redo
 
 ```js
-var structure = immstruct.withHistory({ 'foo': 'bar' });
+// optionalKey and/or optionalLimit can be omitted from the call
+var optionalLimit = 10; // only keep last 10 of history, default Infinity
+var structure = immstruct.withHistory('optionalKey', optionalLimit, { 'foo': 'bar' });
 console.log(structure.cursor('foo').deref()); //=> 'bar'
 
 structure.cursor('foo').update(function () { return 'hello'; });

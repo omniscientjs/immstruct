@@ -23,7 +23,8 @@ var utils = require('./utils');
  * {
  *   key: String, // Defaults to random string
  *   data: Object|Immutable, // defaults to empty Map
- *   history: Boolean // Defaults to false
+ *   history: Boolean, // Defaults to false
+ *   historyLimit: Number, // If history enabled, Defaults to Infinity
  * }
  * ```
  *
@@ -57,6 +58,9 @@ function Structure (options) {
   if (!!options.history) {
     this.history = Immutable.List.of(this.current);
     this._currentRevision = 0;
+    this._historyLimit = (typeof options.historyLimit === 'number') ?
+      options.historyLimit :
+      Infinity;
   }
 
   this._pathListeners = [];
@@ -383,6 +387,11 @@ function handleHistory (emitter, fn) {
     emitter.history = emitter.history
       .take(++emitter._currentRevision)
       .push(emitter.current);
+
+    if (emitter.history.size > emitter._historyLimit) {
+      emitter.history = emitter.history.takeLast(emitter._historyLimit);
+      emitter._currentRevision -= (emitter.history.size - emitter._historyLimit);
+    }
 
     return newStructure;
   };

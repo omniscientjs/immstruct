@@ -19,7 +19,7 @@ of Structure instances.
 
 
 
-**Returns** `Immstruct`, 
+**Returns** `Immstruct`,
 
 
 ### `immstruct.get([key], [data])`
@@ -43,7 +43,7 @@ var structure = immstruct.get('myStruct', { foo: 'Hello' });
 
 
 
-**Returns** `Structure`, 
+**Returns** `Structure`,
 
 
 ### `immstruct.clear`
@@ -78,16 +78,21 @@ Provided by key
 
 
 
-**Returns** `Boolean`, 
+**Returns** `Boolean`,
 
 
-### `immstruct.withHistory([key], [data])`
+### `immstruct.withHistory([key], [limit], [data])`
 
 Gets or creates a new instance of `Structure` with history (undo/redo)
 activated per default. Same usage and signature as regular `Immstruct.get`.
 
 Provide optional key to be able to retrieve it from list of instances.
 If no key is provided, a random key will be generated.
+
+Provide optional limit to cap the last number of history references that
+will be kept. Once limit is reached, a new history record shifts off the
+oldest record. The default if omitted is Infinity. Setting to 0 is the
+as not having history enabled in the first place.
 
 ### Examples:
 
@@ -100,11 +105,12 @@ If no key is provided, a random key will be generated.
 | param    | type             | description                             |
 | -------- | ---------------- | --------------------------------------- |
 | `[key]`  | String           | _optional:_ - defaults to random string |
+| `[limit]`| Positive Integer | _optional:_ - defaults to Infinity      |
 | `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
 
-**Returns** `Structure`, 
+**Returns** `Structure`,
 
 
 ### `immstruct([key], [data])`
@@ -137,7 +143,7 @@ is provided, a random key will be generated.
 
 
 
-**Returns** `Structure,Function`, 
+**Returns** `Structure,Function`,
 
 
 ### `Structure([options])`
@@ -177,12 +183,12 @@ Creates a new `Structure` instance. Also accessible through
 | --------- | ---------------- | ------------------------------- |
 | `history` | Immutable.List   | `Immutable.List` with history.  |
 | `current` | Object,Immutable | Provided data as immutable data |
-| `key`     | String           | Generated or provided key. 
+| `key`     | String           | Generated or provided key.
     |
 
 
 
-**Returns** `Structure`, 
+**Returns** `Structure`,
 
 
 ### `structure.cursor([path])`
@@ -253,7 +259,7 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 
 
-**Returns** `Reference`, 
+**Returns** `Reference`,
 
 
 ### `reference.observe([eventName], callback)`
@@ -324,7 +330,7 @@ Remove all observers from reference.
 
 
 
-**Returns** `Void`, 
+**Returns** `Void`,
 
 
 ### `reference.destroy`
@@ -334,7 +340,7 @@ For cleaning up memory.
 
 
 
-**Returns** `Void`, 
+**Returns** `Void`,
 
 
 ### `structure.forceHasSwapped(newData, oldData, keyPath)`
@@ -353,7 +359,7 @@ If newData is `null` current will be used.
 
 
 
-**Returns** `Void`, 
+**Returns** `Void`,
 
 
 ### `structure.undo(steps)`
@@ -413,6 +419,4 @@ Returns the same immutable structure as passed as argument.
 
 **Returns** `Object`, New Immutable structure after undo
 
-## Private members 
-
-
+## Private members

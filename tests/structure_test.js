@@ -631,6 +631,85 @@ describe('structure', function () {
       structure.cursor('foo').deref().should.equal('Change 1');
     });
 
+
+    describe('with limit', function () {
+
+      it('should be able to undo default', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar' },
+          history: true,
+          historyLimit: 2
+        });
+
+        structure.cursor('foo').update(function () { return 'hello'; });
+        structure.cursor('foo').deref().should.equal('hello');
+        structure.undo();
+        structure.cursor('foo').deref().should.equal('bar');
+        structure.cursor('foo').update(function () { return 'hello2'; });
+        structure.cursor('foo').deref().should.equal('hello2');
+        structure.history.toJS().should.eql([
+          { 'foo': 'bar' },
+          { 'foo': 'hello2' }
+        ]);
+        structure.cursor('foo').update(function () { return 'hello3'; });
+        structure.cursor('foo').deref().should.equal('hello3');
+        structure.history.toJS().should.eql([
+          { 'foo': 'hello2' },
+          { 'foo': 'hello3' }
+        ]);
+      });
+
+      it('should be able to redo default', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar' },
+          history: true,
+          historyLimit: 2
+        });
+
+        structure.cursor('foo').update(function () { return 'hello'; });
+        structure.cursor('foo').deref().should.equal('hello');
+        structure.undo();
+        structure.cursor('foo').deref().should.equal('bar');
+        structure.redo();
+        structure.cursor('foo').deref().should.equal('hello');
+      });
+
+      it('should be able undo multiple steps up to capped start', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar' },
+          history: true,
+          historyLimit: 2
+        });
+
+        structure.cursor('foo').update(function () { return 'Change 1'; });
+        structure.cursor('foo').update(function () { return 'Change 2'; });
+        structure.cursor('foo').deref().should.equal('Change 2');
+
+        structure.undo(2);
+        structure.cursor('foo').deref().should.equal('Change 1');
+      });
+
+      it('should be able redo multiple steps', function () {
+        var structure = new Structure({
+          data: { 'foo': 'bar' },
+          history: true,
+          historyLimit: 2
+        });
+
+        structure.cursor('foo').update(function () { return 'Change 1'; });
+        structure.cursor('foo').update(function () { return 'Change 2'; });
+        structure.cursor('foo').update(function () { return 'Change 3'; });
+        structure.cursor('foo').deref().should.equal('Change 3');
+
+        structure.undo(3);
+        structure.cursor('foo').deref().should.equal('Change 2');
+
+        structure.redo(2);
+        structure.cursor('foo').deref().should.equal('Change 3');
+      });
+
+    });
+
   });
 
 
