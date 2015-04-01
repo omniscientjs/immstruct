@@ -54,6 +54,36 @@ describe('immstruct', function () {
     structure.history.get(0).toJS().should.eql({ foo: 'bar' });
   });
 
+  it('should be able to create structure with history and key', function () {
+    var structure = immstruct.withHistory('histAndKey', { foo: 'bar' });
+    structure.current.toJS().should.be.an('object');
+    structure.history.get(0).toJS().should.eql({ foo: 'bar' });
+    var structureRef = immstruct('histAndKey');
+    structureRef.history.get(0).toJS().should.eql({ foo: 'bar' });
+  });
+
+  it('should be able to create structure with capped history', function () {
+    var limit = 1; // only keep this many history refs
+    var structure = immstruct.withHistory(limit, { foo: 'bar' });
+    structure.current.toJS().should.be.an('object');
+    structure.history.get(0).toJS().should.eql({ foo: 'bar' });
+    structure.cursor('foo').update(function () { return 'cat'; });
+    structure.history.size.should.eql(1);
+    structure.history.get(0).toJS().should.eql({ foo: 'cat' });
+  });
+
+  it('should be able to create structure with capped history and key', function () {
+    var limit = 1; // only keep this many history refs
+    var structure = immstruct.withHistory('histLimitKey', limit, { foo: 'bar' });
+    structure.current.toJS().should.be.an('object');
+    structure.history.get(0).toJS().should.eql({ foo: 'bar' });
+    structure.cursor('foo').update(function () { return 'cat'; });
+    structure.history.size.should.eql(1);
+    structure.history.get(0).toJS().should.eql({ foo: 'cat' });
+    var structureRef = immstruct('histLimitKey');
+    structureRef.history.get(0).toJS().should.eql({ foo: 'cat' });
+  });
+
   it('should give structure with random key when js object given as only argument', function () {
     var structure = immstruct({ foo: 'hello' });
     structure.current.toJS().should.have.property('foo');
