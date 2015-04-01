@@ -1,4 +1,4 @@
-Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][depstat-image]][depstat-url]
+Immstruct [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][depstat-image]][depstat-url] [![Gitter][gitter-image]][gitter-url]
 ======
 
 A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/master/contrib/cursor) to easily create cursors that notify when they
@@ -200,6 +200,8 @@ A Structure object is an event emitter and emits the following events:
 [depstat-url]: https://gemnasium.com/omniscientjs/immstruct
 [depstat-image]: http://img.shields.io/gemnasium/omniscientjs/immstruct.svg?style=flat
 
+[gitter-url]: https://gitter.im/omniscientjs/omniscient?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[gitter-image]: https://badges.gitter.im/Join%20Chat.svg
 
 ## License
 
