@@ -252,12 +252,10 @@ Structure.prototype.reference = function (path) {
      * @module reference.cursor
      * @returns {Cursor} Immutable.js cursor
      */
-    cursor: function (path) {
-      if (path) {
-        return cursor.cursor(path);
-      } else {
-      	return cursor;
-      }
+    cursor: function (subPath) {
+      subPath = valToKeyPath(subPath);
+      if (subPath) return cursor.cursor(subPath);
+      return cursor;
     },
 
     /**
