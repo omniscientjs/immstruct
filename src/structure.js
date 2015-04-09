@@ -63,15 +63,15 @@ function Structure (options) {
       Infinity;
   }
 
-  this._pathListeners = [];
+  this._pathListeners = {};
   this.on('swap', function (newData, oldData, keyPath) {
-    listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
-      fns.forEach(function (fn) {
-        if (typeof fn !== 'function') return;
+    listListenerMatching(self._pathListeners, keyPath).forEach(function (fn) {
+      if (typeof fn == 'function') {
         fn(keyPath, newData, oldData);
+      }
       });
     });
-  });
+
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
@@ -169,13 +169,19 @@ Structure.prototype.reference = function (path) {
   if (isCursor(path) && path._keyPath) {
     path = path._keyPath;
   }
-  var self = this, pathId = pathString(path);
-  var listenerNs = self._pathListeners[pathId];
-  var cursor = this.cursor(path);
 
-  var changeListener = function (newRoot, oldRoot, changedPath) { cursor = self.cursor(path); };
-  var referenceListeners = [changeListener];
-  this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
+  path = valToKeyPath(path) || [];
+
+  var self = this,
+      listenerNs = getListenerNs(self._pathListeners, path),
+      cursor = this.cursor(path),
+      changeListener = function() {
+        cursor = self.cursor(path);
+      };
+
+  if (!listenerNs[0]) {
+    listenerNs.push(changeListener);
+  }
 
   return {
     /**
@@ -216,20 +222,13 @@ Structure.prototype.reference = function (path) {
         newFn = onlyOnEvent(eventName, newFn);
       }
 
-      self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
-      referenceListeners = referenceListeners.concat(newFn);
+      listenerNs.push(newFn);
 
       return function unobserve () {
-        var fnIndex = self._pathListeners[pathId].indexOf(newFn);
-        var localListenerIndex = referenceListeners.indexOf(newFn);
-
-        if (referenceListeners[localListenerIndex] === newFn) {
-          referenceListeners.splice(localListenerIndex, 1);
+        var fnIndex = listenerNs.indexOf(newFn);
+        if (fnIndex > -1) {
+          listenerNs.splice(fnIndex, 1);
         }
-
-        if (!self._pathListeners[pathId]) return;
-        if (self._pathListeners[pathId][fnIndex] !== newFn) return;
-        self._pathListeners[pathId].splice(fnIndex, 1);
       };
     },
 
@@ -253,10 +252,12 @@ Structure.prototype.reference = function (path) {
      * @module reference.cursor
      * @returns {Cursor} Immutable.js cursor
      */
-    cursor: function (subPath) {
-      subPath = valToKeyPath(subPath);
-      if (subPath) return cursor.cursor(subPath);
-      return cursor;
+    cursor: function (path) {
+      if (path) {
+        return cursor.cursor(path);
+      } else {
+      	return cursor;
+      }
     },
 
     /**
@@ -267,8 +268,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     unobserveAll: function () {
-      removeAllListenersBut(self, pathId, referenceListeners, changeListener);
-      referenceListeners = [changeListener];
+      removeAllListenersBut(listenerNs, changeListener);
     },
 
     /**
@@ -280,8 +280,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     destroy: function () {
-      removeAllListenersBut(self, pathId, referenceListeners);
-      referenceListeners = void 0;
+      removeAllListenersBut(listenerNs);
       cursor = void 0;
 
       this._dead = true;
@@ -444,13 +443,19 @@ function handlePersisting (emitter, fn) {
 
 // Private helpers.
 
-function removeAllListenersBut(self, pathId, listeners, except) {
+function removeAllListenersBut(listeners, except) {
   if (!listeners) return;
-  listeners.forEach(function (fn) {
-    if (except && fn === except) return;
-    var index = self._pathListeners[pathId].indexOf(fn);
-    self._pathListeners[pathId].splice(index, 1);
-  });
+  var fn;
+  for (var i= 0; i < listeners.length; i++) {
+    fn = listeners[i];
+    if (!except || fn !== except) {
+      var index = listeners.indexOf(fn);
+      if (index > -1) {
+        i--;
+        listeners.splice(index, 1);
+      }
+    }
+  }
 }
 
 function analyze (newData, oldData, path) {
@@ -487,21 +492,31 @@ function hasIn(cursor, path) {
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
 }
 
-function pathString(path) {
-  var topLevel = 'global';
-  if (!path || !path.length) return topLevel;
-  return [topLevel].concat(path).join('|');
+function listListenerMatching (listeners, path) {
+  var pathArray = [],
+      matches = [];
+
+  path = path || [];
+
+  path.forEach(function(pathPart) {
+    pathArray = pathArray.concat(pathPart);
+    matches = matches.concat(getListenerNs(listeners, pathArray));
+  });
+
+  return matches;
 }
 
-function listListenerMatching (listeners, basePath) {
-  var newListeners = [];
-  for (var key in listeners) {
-    if (!listeners.hasOwnProperty(key)) continue;
-    if (basePath.indexOf(key) !== 0) continue;
-    newListeners.push(listeners[key]);
+function getListenerNs (listeners, path) {
+  path = path || [];
+  path = path.concat("__listeners__");
+  var matchedListeners = utils.deepGet(listeners, path);
+
+  if (!matchedListeners) {
+    matchedListeners = [];
+    utils.deepSet(listeners, path, matchedListeners);
   }
 
-  return newListeners;
+  return matchedListeners;
 }
 
 function onlyOnEvent(eventName, fn) {
