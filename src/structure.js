@@ -63,14 +63,12 @@ function Structure (options) {
       Infinity;
   }
 
-  this._pathListeners = {};
+  this._pathListeners = utils.Map();
   this.on('swap', function (newData, oldData, keyPath) {
     listListenerMatching(self._pathListeners, keyPath).forEach(function (fn) {
-      if (typeof fn == 'function') {
         fn(keyPath, newData, oldData);
-      }
-      });
     });
+  });
 
   EventEmitter.call(this, arguments);
 }
@@ -507,11 +505,11 @@ function listListenerMatching (listeners, path) {
 function getListenerNs (listeners, path) {
   path = path || [];
   path = path.concat("__listeners__");
-  var matchedListeners = utils.deepGet(listeners, path);
+  var matchedListeners = listeners.deepGet(path);
 
   if (!matchedListeners) {
     matchedListeners = [];
-    utils.deepSet(listeners, path, matchedListeners);
+    listeners.deepSet(path, matchedListeners);
   }
 
   return matchedListeners;

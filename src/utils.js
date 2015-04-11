@@ -5,34 +5,80 @@ module.exports.generateRandomKey = function (len) {
   return Math.random().toString(36).substring(2).substring(0, len);
 };
 
-module.exports.deepGet = function(collection, path) {
-  var current = collection,
-      path = path || [];
 
-  path.forEach(function(property) {
-    if (current && property in current) {
-      current = current[property];
-    } else {
-      current = undefined;
-      return false;
+// a basic Map that supports object keys
+function Map(keys, values) {return new _Map(keys, values)}
+module.exports.Map = Map;
+
+function _Map(keys, values) {this.clear(keys, values);}
+_Map.prototype = {
+
+  set: function(key, value) {
+    var i = this.indexOf(key);
+    this._keys[i] = key;
+    this._values[i] = value;
+    return i !== this._keys.length;
+  },
+
+  get: function(key) {
+    var i = this.indexOf(key);
+    return this._values[i];
+  },
+
+  remove: function(key) {
+    var i = this.indexOf(key);
+    if (i !== this._keys.length) {
+      this._keys.splice(i, 1);
+      this._values.splice(i, 1);
     }
-  });
+    return this;
+  },
 
-  return current;
-};
+  clear: function(keys, values) {
+    this._keys = keys || [];
+    this._values = values || [];
+    return this;
+  },
 
-module.exports.deepSet = function(collection, path, value) {
-  var currentObject = collection,
-      path = path || [];
+  indexOf: function(key) {
+    var i = this._keys.indexOf(key);
+    return i === -1 ? this._keys.length : i;
+  },
 
-  path.forEach(function(property, index) {
-    if (index + 1 === path.length) {
-      currentObject[property] = value;
-    } else if (!currentObject[property]) {
-      currentObject[property] = {};
+  deepGet: function(keyPath) {
+    var current = this,
+        keyPath = keyPath || [],
+        key;
+
+    for(var i= 0, len=keyPath.length; i<len; i++) {
+      key = keyPath[i];
+      current = current.get(key);
+      if (current === undefined) {
+        break;
+      }
     }
-    currentObject = currentObject[property];
-  });
 
-  return collection;
+    return current;
+  },
+
+  deepSet: function(keyPath, value) {
+    var current = this,
+        keyPath = keyPath || [],
+        _cur;
+
+    keyPath.forEach(function(key, index) {
+      if (index + 1 === keyPath.length) {
+        current.set(key, value);
+      } else {
+        _cur = current.get(key);
+        if (!_cur) {
+          _cur = Map();
+          current.set(key, _cur);
+        }
+        current = _cur;
+      }
+    });
+
+    return this;
+  }
 };
