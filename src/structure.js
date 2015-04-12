@@ -5,6 +5,9 @@ var Cursor = require('immutable/contrib/cursor/index');
 var EventEmitter = require('eventemitter3').EventEmitter;
 var utils = require('./utils');
 
+
+var LISTENER_SENTINEL = {};
+
  /**
  * Creates a new `Structure` instance. Also accessible through
  * `Immstruct.Structre`.
@@ -63,10 +66,13 @@ function Structure (options) {
       Infinity;
   }
 
-  this._pathListeners = utils.Map();
+  this._pathListeners = Immutable.Map();
   this.on('swap', function (newData, oldData, keyPath) {
-    listListenerMatching(self._pathListeners, keyPath).forEach(function (fn) {
-        fn(keyPath, newData, oldData);
+    var listenerData = listMatchingOrCreateEmptyList(self._pathListeners, keyPath);
+    self._pathListeners = listenerData.listeners;
+
+    listenerData.matched.forEach(function (fn) {
+      fn(keyPath, newData, oldData);
     });
   });
 
@@ -171,13 +177,16 @@ Structure.prototype.reference = function (path) {
   path = valToKeyPath(path) || [];
 
   var self = this,
-      listenerNs = getListenerNs(self._pathListeners, path),
+      listenerData = listMatchingOrCreateEmptyListOnNamespace(self._pathListeners, path),
+      listenerNs = listenerData.matched,
       cursor = this.cursor(path),
       changeListener = function() {
         cursor = self.cursor(path);
       };
 
-  if (!listenerNs[0]) {
+  self._pathListeners = listenerData.listeners;
+
+  if (!listenerNs.length) {
     listenerNs.push(changeListener);
   }
 
@@ -488,31 +497,35 @@ function hasIn(cursor, path) {
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
 }
 
-function listListenerMatching (listeners, path) {
-  var pathArray = [],
-      matches = [];
-
-  path = path || [];
-
-  path.forEach(function(pathPart) {
+function listMatchingOrCreateEmptyList (listeners, path) {
+  var pathArray = [];
+  return (path || []).reduce(function(acc, pathPart) {
     pathArray = pathArray.concat(pathPart);
-    matches = matches.concat(getListenerNs(listeners, pathArray));
-  });
+    var listenerData = listMatchingOrCreateEmptyListOnNamespace(acc.listeners, pathArray);
 
-  return matches;
+    return {
+      listeners: listenerData.listeners,
+      matched: acc.matched.concat(listenerData.matched)
+    };
+  }, {
+    listeners: listeners,
+    matched: []
+  });
 }
 
-function getListenerNs (listeners, path) {
-  path = path || [];
-  path = path.concat("__listeners__");
-  var matchedListeners = listeners.deepGet(path);
+function listMatchingOrCreateEmptyListOnNamespace (listeners, path) {
+  path = (path || []).concat(LISTENER_SENTINEL);
+  var matched = listeners.getIn(path);
 
-  if (!matchedListeners) {
-    matchedListeners = [];
-    listeners.deepSet(path, matchedListeners);
+  if (!matched) {
+    matched = [];
+    listeners = listeners.setIn(path, matched);
   }
 
-  return matchedListeners;
+  return {
+    matched: matched,
+    listeners: listeners
+  };
 }
 
 function onlyOnEvent(eventName, fn) {
