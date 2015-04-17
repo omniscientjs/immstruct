@@ -179,16 +179,19 @@ Structure.prototype.reference = function (path) {
   var self = this,
       listenerData = listMatchingOrCreateEmptyListOnNamespace(self._pathListeners, path),
       listenerNs = listenerData.matched,
-      cursor = this.cursor(path),
-      changeListener = function() {
-        cursor = self.cursor(path);
-      };
+      unobservers = [],
+      cursor = this.cursor(path);
+
+  function cursorRefresher() {cursor = self.cursor(path)}
+
+  function addCursorRefresher() {
+    unobservers.push(unobserver(listenerNs, cursorRefresher));
+    listenerNs.push(cursorRefresher);
+  }
+
+  addCursorRefresher();
 
   self._pathListeners = listenerData.listeners;
-
-  if (!listenerNs.length) {
-    listenerNs.push(changeListener);
-  }
 
   return {
     /**
@@ -229,14 +232,12 @@ Structure.prototype.reference = function (path) {
         newFn = onlyOnEvent(eventName, newFn);
       }
 
+      var unobserveFn = unobserver(listenerNs, newFn);
+
+      unobservers.push(unobserveFn);
       listenerNs.push(newFn);
 
-      return function unobserve () {
-        var fnIndex = listenerNs.indexOf(newFn);
-        if (fnIndex > -1) {
-          listenerNs.splice(fnIndex, 1);
-        }
-      };
+      return unobserveFn;
     },
 
     /**
@@ -272,8 +273,12 @@ Structure.prototype.reference = function (path) {
      * @module reference.unobserveAll
      * @returns {Void}
      */
-    unobserveAll: function () {
-      removeAllListenersBut(listenerNs, changeListener);
+    unobserveAll: function (destroy) {
+      unobservers.forEach(function(unobserve) {
+        unobserve();
+      });
+
+      !destroy && addCursorRefresher();
     },
 
     /**
@@ -285,7 +290,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     destroy: function () {
-      removeAllListenersBut(listenerNs);
+      this.unobserveAll(true);
       cursor = void 0;
 
       this._dead = true;
@@ -448,17 +453,11 @@ function handlePersisting (emitter, fn) {
 
 // Private helpers.
 
-function removeAllListenersBut(listeners, except) {
-  if (!listeners) return;
-  var fn;
-  for (var i= 0; i < listeners.length; i++) {
-    fn = listeners[i];
-    if (!except || fn !== except) {
-      var index = listeners.indexOf(fn);
-      if (index > -1) {
-        i--;
-        listeners.splice(index, 1);
-      }
+function unobserver(listenerNs, observerFn) {
+  return function() {
+    var fnIndex = listenerNs.indexOf(observerFn);
+    if (fnIndex > -1) {
+      listenerNs.splice(fnIndex, 1);
     }
   }
 }
@@ -488,7 +487,6 @@ function analyze (newData, oldData, path) {
     args: args
   };
 }
-
 
 // Check if path exists.
 var NOT_SET = {};
