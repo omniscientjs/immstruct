@@ -261,6 +261,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Cursor} Immutable.js cursor
      */
     cursor: function (subPath) {
+      if (this._dead) return void 0;
       subPath = valToKeyPath(subPath);
       if (subPath) return cursor.cursor(subPath);
       return cursor;
@@ -273,12 +274,9 @@ Structure.prototype.reference = function (path) {
      * @module reference.unobserveAll
      * @returns {Void}
      */
-    unobserveAll: function (destroy) {
-      unobservers.forEach(function(unobserve) {
-        unobserve();
-      });
-
-      !destroy && addCursorRefresher();
+    unobserveAll: function () {
+      unobservers.forEach(invoke);
+      addCursorRefresher();
     },
 
     /**
@@ -290,8 +288,8 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     destroy: function () {
-      this.unobserveAll(true);
       cursor = void 0;
+      unobservers.forEach(invoke);
 
       this._dead = true;
       this.observe = void 0;
@@ -552,6 +550,10 @@ function isImmutableStructure (data) {
 
 function immutableSafeCheck (ns, method, data) {
   return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
+}
+
+function invoke (fn) {
+  return fn();
 }
 
 function valToKeyPath(val) {
