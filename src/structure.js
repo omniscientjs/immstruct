@@ -5,6 +5,9 @@ var Cursor = require('immutable/contrib/cursor/index');
 var EventEmitter = require('eventemitter3').EventEmitter;
 var utils = require('./utils');
 
+
+var LISTENER_SENTINEL = {};
+
  /**
  * Creates a new `Structure` instance. Also accessible through
  * `Immstruct.Structre`.
@@ -63,15 +66,16 @@ function Structure (options) {
       Infinity;
   }
 
-  this._pathListeners = [];
+  this._pathListeners = Immutable.Map();
   this.on('swap', function (newData, oldData, keyPath) {
-    listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
-      fns.forEach(function (fn) {
-        if (typeof fn !== 'function') return;
-        fn(keyPath, newData, oldData);
-      });
+    var listenerData = listMatchingOrCreateEmptyList(self._pathListeners, keyPath);
+    self._pathListeners = listenerData.listeners;
+
+    listenerData.matched.forEach(function (fn) {
+      fn(keyPath, newData, oldData);
     });
   });
+
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
@@ -169,13 +173,25 @@ Structure.prototype.reference = function (path) {
   if (isCursor(path) && path._keyPath) {
     path = path._keyPath;
   }
-  var self = this, pathId = pathString(path);
-  var listenerNs = self._pathListeners[pathId];
-  var cursor = this.cursor(path);
 
-  var changeListener = function (newRoot, oldRoot, changedPath) { cursor = self.cursor(path); };
-  var referenceListeners = [changeListener];
-  this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
+  path = valToKeyPath(path) || [];
+
+  var self = this,
+      listenerData = listMatchingOrCreateEmptyListOnNamespace(self._pathListeners, path),
+      listenerNs = listenerData.matched,
+      unobservers = [],
+      cursor = this.cursor(path);
+
+  function cursorRefresher() {cursor = self.cursor(path)}
+
+  function addCursorRefresher() {
+    unobservers.push(unobserver(listenerNs, cursorRefresher));
+    listenerNs.push(cursorRefresher);
+  }
+
+  addCursorRefresher();
+
+  self._pathListeners = listenerData.listeners;
 
   return {
     /**
@@ -216,21 +232,12 @@ Structure.prototype.reference = function (path) {
         newFn = onlyOnEvent(eventName, newFn);
       }
 
-      self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
-      referenceListeners = referenceListeners.concat(newFn);
+      var unobserveFn = unobserver(listenerNs, newFn);
 
-      return function unobserve () {
-        var fnIndex = self._pathListeners[pathId].indexOf(newFn);
-        var localListenerIndex = referenceListeners.indexOf(newFn);
+      unobservers.push(unobserveFn);
+      listenerNs.push(newFn);
 
-        if (referenceListeners[localListenerIndex] === newFn) {
-          referenceListeners.splice(localListenerIndex, 1);
-        }
-
-        if (!self._pathListeners[pathId]) return;
-        if (self._pathListeners[pathId][fnIndex] !== newFn) return;
-        self._pathListeners[pathId].splice(fnIndex, 1);
-      };
+      return unobserveFn;
     },
 
     /**
@@ -266,9 +273,12 @@ Structure.prototype.reference = function (path) {
      * @module reference.unobserveAll
      * @returns {Void}
      */
-    unobserveAll: function () {
-      removeAllListenersBut(self, pathId, referenceListeners, changeListener);
-      referenceListeners = [changeListener];
+    unobserveAll: function (destroy) {
+      unobservers.forEach(function(unobserve) {
+        unobserve();
+      });
+
+      !destroy && addCursorRefresher();
     },
 
     /**
@@ -280,8 +290,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     destroy: function () {
-      removeAllListenersBut(self, pathId, referenceListeners);
-      referenceListeners = void 0;
+      this.unobserveAll(true);
       cursor = void 0;
 
       this._dead = true;
@@ -444,13 +453,13 @@ function handlePersisting (emitter, fn) {
 
 // Private helpers.
 
-function removeAllListenersBut(self, pathId, listeners, except) {
-  if (!listeners) return;
-  listeners.forEach(function (fn) {
-    if (except && fn === except) return;
-    var index = self._pathListeners[pathId].indexOf(fn);
-    self._pathListeners[pathId].splice(index, 1);
-  });
+function unobserver(listenerNs, observerFn) {
+  return function() {
+    var fnIndex = listenerNs.indexOf(observerFn);
+    if (fnIndex > -1) {
+      listenerNs.splice(fnIndex, 1);
+    }
+  }
 }
 
 function analyze (newData, oldData, path) {
@@ -479,7 +488,6 @@ function analyze (newData, oldData, path) {
   };
 }
 
-
 // Check if path exists.
 var NOT_SET = {};
 function hasIn(cursor, path) {
@@ -487,21 +495,35 @@ function hasIn(cursor, path) {
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
 }
 
-function pathString(path) {
-  var topLevel = 'global';
-  if (!path || !path.length) return topLevel;
-  return [topLevel].concat(path).join('|');
+function listMatchingOrCreateEmptyList (listeners, path) {
+  var pathArray = [];
+  return (path || []).reduce(function(acc, pathPart) {
+    pathArray = pathArray.concat(pathPart);
+    var listenerData = listMatchingOrCreateEmptyListOnNamespace(acc.listeners, pathArray);
+
+    return {
+      listeners: listenerData.listeners,
+      matched: acc.matched.concat(listenerData.matched)
+    };
+  }, {
+    listeners: listeners,
+    matched: []
+  });
 }
 
-function listListenerMatching (listeners, basePath) {
-  var newListeners = [];
-  for (var key in listeners) {
-    if (!listeners.hasOwnProperty(key)) continue;
-    if (basePath.indexOf(key) !== 0) continue;
-    newListeners.push(listeners[key]);
+function listMatchingOrCreateEmptyListOnNamespace (listeners, path) {
+  path = (path || []).concat(LISTENER_SENTINEL);
+  var matched = listeners.getIn(path);
+
+  if (!matched) {
+    matched = [];
+    listeners = listeners.setIn(path, matched);
   }
 
-  return newListeners;
+  return {
+    matched: matched,
+    listeners: listeners
+  };
 }
 
 function onlyOnEvent(eventName, fn) {

@@ -1029,6 +1029,21 @@ describe('structure', function () {
         ref.cursor().update(function () { return 'updated'; });
       });
 
+
+      it('should not remove listeners from other cursors', function (done) {
+        var structure = new Structure({data: {foo: 'bar'}});
+        var i = 0;
+        var i2 = 0;
+        var ref = structure.reference('foo');
+        var ref2 = structure.reference('foo');
+        ref.observe(function () { i++; });
+        ref2.observe(function () { i2++; });
+        ref2.cursor().update(function () { return 'updated'; });
+        ref2.observe(function () { if(i == 1 && i2 == 2) done(); });
+        ref.unobserveAll();
+        ref.cursor().update(function () { return 'updated again'; });
+      });
+
       it('should be able to call unsubscribe multiple times without effect', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }
