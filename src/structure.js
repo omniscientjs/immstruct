@@ -538,14 +538,19 @@ function isCursor (potential) {
 
 // Check if passed structure is existing immutable structure.
 // From https://github.com/facebook/immutable-js/wiki/Upgrading-to-Immutable-v3#additional-changes
+var immutableCheckers = [
+  {name: 'Iterable', method: 'isIterable' },
+  {name: 'Seq', method: 'isSeq'},
+  {name: 'Map', method: 'isMap'},
+  {name: 'OrderedMap', method: 'isOrderedMap'},
+  {name: 'List', method: 'isList'},
+  {name: 'Stack', method: 'isStack'},
+  {name: 'Set', method: 'isSet'}
+];
 function isImmutableStructure (data) {
-  return immutableSafeCheck('Iterable', 'isIterable', data) ||
-          immutableSafeCheck('Seq', 'isSeq', data) ||
-          immutableSafeCheck('Map', 'isMap', data) ||
-          immutableSafeCheck('OrderedMap', 'isOrderedMap', data) ||
-          immutableSafeCheck('List', 'isList', data) ||
-          immutableSafeCheck('Stack', 'isStack', data) ||
-          immutableSafeCheck('Set', 'isSet', data);
+  return immutableCheckers.some(function (checkItem) {
+    return immutableSafeCheck(checkItem.name, checkItem.method, data);
+  });
 }
 
 function immutableSafeCheck (ns, method, data) {
