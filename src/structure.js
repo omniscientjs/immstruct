@@ -66,21 +66,65 @@ function Structure (options) {
       Infinity;
   }
 
-  this._pathListeners = Immutable.Map();
-  this.on('swap', function (newData, oldData, keyPath) {
-    var listenerData = listMatchingOrCreateEmptyList(self._pathListeners, keyPath);
-    self._pathListeners = listenerData.listeners;
+   this._referencelisteners = Immutable.Map();
 
-    listenerData.matched.forEach(function (fn) {
-      fn(keyPath, newData, oldData);
-    });
+  this.on('swap', function (newData, oldData, keyPath) {
+      var args = [keyPath, newData, oldData];
+      if (!keyPath || keyPath.length === 0) {
+          emit(
+              self._referencelisteners,
+              newData,
+              oldData,
+              [],
+              args
+          );
+      } else {
+          var path = keyPath[0];
+          emit(
+              self._referencelisteners.get(path),
+              newData.get(path),
+              oldData.get(path),
+              keyPath.slice(1),
+              args
+          );
+      }
   });
 
   EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
 module.exports = Structure;
+var FUNCTION_KEY = {};
 
+function emit(map, newData, oldData, path, args) {
+
+    if (map && newData !== oldData) {
+        map.get(FUNCTION_KEY, []).forEach(function (fn) {
+            fn.apply(null, args);
+        });
+        if (path.length > 0) {
+            var path2 = path[0];
+            emit(map.get(path2), newData.get(path2), oldData.get(path2), path.slice(1), args);
+        } else {
+            map.forEach(function(value, key) {
+                if (key !== FUNCTION_KEY) {
+                    emit(value, newData.get(key), oldData.get(key), [], args);
+                }
+            });
+        }
+    }
+}
+
+function subscribe(listeners, path, fn) {
+    return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+        return old.add(fn);
+    });
+}
+function unsubscribe(listeners, path, fn) {
+    return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+        return old.remove(fn);
+    });
+}
 
 /**
  * Create a Immutable.js Cursor for a given `path` on the `current` structure (see `Structure.current`).
@@ -177,21 +221,19 @@ Structure.prototype.reference = function (path) {
   path = valToKeyPath(path) || [];
 
   var self = this,
-      listenerData = listMatchingOrCreateEmptyListOnNamespace(self._pathListeners, path),
-      listenerNs = listenerData.matched,
-      unobservers = [],
-      cursor = this.cursor(path);
+      cursor = this.cursor(path),
+      unobservers = Immutable.Set();
 
-  function cursorRefresher() {cursor = self.cursor(path)}
+  function cursorRefresher() {cursor = self.cursor(path); }
 
-  function addCursorRefresher() {
-    unobservers.push(unobserver(listenerNs, cursorRefresher));
-    listenerNs.push(cursorRefresher);
-  }
+    var _subscribe = function (path, fn) {
+            self._referencelisteners = subscribe(self._referencelisteners, path, fn);
+        },
+        _unsubscribe = function (path, fn) {
+            self._referencelisteners = unsubscribe(self._referencelisteners, path, fn);
+        };
 
-  addCursorRefresher();
-
-  self._pathListeners = listenerData.listeners;
+  _subscribe(path, cursorRefresher);
 
   return {
     /**
@@ -232,12 +274,12 @@ Structure.prototype.reference = function (path) {
         newFn = onlyOnEvent(eventName, newFn);
       }
 
-      var unobserveFn = unobserver(listenerNs, newFn);
+      _subscribe(path, newFn);
+      unobservers = unobservers.add(newFn);
 
-      unobservers.push(unobserveFn);
-      listenerNs.push(newFn);
-
-      return unobserveFn;
+      return function() {
+        _unsubscribe(path, newFn);
+      };
     },
 
     /**
@@ -274,9 +316,14 @@ Structure.prototype.reference = function (path) {
      * @module reference.unobserveAll
      * @returns {Void}
      */
-    unobserveAll: function () {
-      unobservers.forEach(invoke);
-      addCursorRefresher();
+    unobserveAll: function (destroy) {
+      unobservers.forEach(function(fn) {
+        _unsubscribe(path, fn);
+      });
+
+      if (destroy) {
+        _unsubscribe(path, cursorRefresher);
+      }
     },
 
     /**
@@ -289,7 +336,7 @@ Structure.prototype.reference = function (path) {
      */
     destroy: function () {
       cursor = void 0;
-      unobservers.forEach(invoke);
+      this.unobserveAll(true);
 
       this._dead = true;
       this.observe = void 0;
@@ -491,37 +538,6 @@ var NOT_SET = {};
 function hasIn(cursor, path) {
   if(cursor.hasIn) return cursor.hasIn(path);
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
-}
-
-function listMatchingOrCreateEmptyList (listeners, path) {
-  var pathArray = [];
-  return (path || []).reduce(function(acc, pathPart) {
-    pathArray = pathArray.concat(pathPart);
-    var listenerData = listMatchingOrCreateEmptyListOnNamespace(acc.listeners, pathArray);
-
-    return {
-      listeners: listenerData.listeners,
-      matched: acc.matched.concat(listenerData.matched)
-    };
-  }, {
-    listeners: listeners,
-    matched: []
-  });
-}
-
-function listMatchingOrCreateEmptyListOnNamespace (listeners, path) {
-  path = (path || []).concat(LISTENER_SENTINEL);
-  var matched = listeners.getIn(path);
-
-  if (!matched) {
-    matched = [];
-    listeners = listeners.setIn(path, matched);
-  }
-
-  return {
-    matched: matched,
-    listeners: listeners
-  };
 }
 
 function onlyOnEvent(eventName, fn) {

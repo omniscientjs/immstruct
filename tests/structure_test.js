@@ -849,6 +849,26 @@ describe('structure', function () {
         ref.cursor().update(function () { return 'updated'; });
       });
 
+      it('should trigger change listener for depending observed references', function (done) {
+        var structure = new Structure({
+          data: {a: {b: {c: "value"}}}
+        });
+
+        var ref = structure.reference(['a', 'b']);
+        ref.observe(function () { done(); });
+        structure.cursor('a').update(function (old) { return old.setIn(['b', 'c'], 'updated'); });
+      });
+
+      it('should trigger change listener for depending observed references', function (done) {
+        var structure = new Structure({
+          data: {a: {b: {c: "value"}}}
+        });
+
+        var ref = structure.reference(['a', 'b']);
+        ref.observe(function () { done(); });
+        structure.cursor().update(function (old) { return old.setIn(['a', 'b', 'c'], 'updated'); });
+      });
+
       it('should trigger change listener for reference when changing cursor from outside', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }
@@ -1180,12 +1200,12 @@ describe('structure', function () {
         ref1.observe(function () { firstChange = true; });
         ref1.observe(function () { firstChange = true; });
 
-        ref2.observe(function () { secondChange = true; });
 
         ref1.unobserveAll();
         cursor1.update(function() { return 'changed'; });
         firstChange.should.equal(false);
 
+        ref2.observe(function () { secondChange = true; });
         ref2.unobserveAll();
         cursor2.update(function() { return 'changed'; });
         secondChange.should.equal(false);
