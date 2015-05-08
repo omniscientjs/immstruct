@@ -23,7 +23,7 @@ function Immstruct () {
     return new Immstruct();
   }
 
-  this.instances = {};
+  this._instances = {};
 }
 
 /**
@@ -52,6 +52,21 @@ Immstruct.prototype.get = function (key, data) {
 };
 
 /**
+ *
+ * Get list of all instances created.
+ *
+ * @param {String} [name] - Name of the instance to get. If undefined get all instances
+ *
+ * @returns {Array}
+ * @module immstruct.getInstances
+ * @api public
+ */
+Immstruct.prototype.instance = function (name) {
+  if (name) return this._instances[name];
+  return this._instances;
+};
+
+/**
  * Clear the entire list of `Structure` instances from the Immstruct
  * instance. You would do this to start from scratch, freeing up memory.
  *
@@ -64,7 +79,7 @@ Immstruct.prototype.get = function (key, data) {
  * @api public
  */
 Immstruct.prototype.clear = function () {
-  this.instances = {};
+  this._instances = {};
 };
 
 /**
@@ -84,7 +99,7 @@ Immstruct.prototype.clear = function () {
  * @returns {Boolean}
  */
 Immstruct.prototype.remove = function (key) {
-  return delete this.instances[key];
+  return delete this._instances[key];
 };
 
 
@@ -177,11 +192,10 @@ module.exports.Immstruct = Immstruct;
 module.exports.clear     = inst.clear.bind(inst);
 module.exports.remove    = inst.remove.bind(inst);
 module.exports.get       = inst.get.bind(inst);
-Object.defineProperty(module.exports, 'instances', {
-  get: function() { return inst.instances; },
-  enumerable: true,
-  configurable: true
-});
+module.exports.instance = function (name) {
+  if (name) return inst._instances[name];
+  return inst._instances;
+};
 
 function getInstance (obj, options) {
   if (typeof options.key === 'object') {
@@ -196,11 +210,11 @@ function getInstance (obj, options) {
     options.historyLimit = void 0;
   }
 
-  if (options.key && obj.instances[options.key]) {
-    return obj.instances[options.key];
+  if (options.key && obj._instances[options.key]) {
+    return obj._instances[options.key];
   }
 
   var newInstance = new Structure(options);
-  obj.instances[newInstance.key] = newInstance;
+  obj._instances[newInstance.key] = newInstance;
   return newInstance;
 }

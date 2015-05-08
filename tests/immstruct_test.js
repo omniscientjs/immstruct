@@ -41,9 +41,9 @@ describe('immstruct', function () {
     var structure = local.get();
     var stdStructure = immstruct();
 
-    local.instances[structure.key].should.not.equal(stdStructure);
+    local.instance(structure.key).should.not.equal(stdStructure);
 
-    local.instances.should.be.an('object');
+    local.instance().should.be.an('object');
     stdStructure.should.be.an('object');
     structure.should.be.an('object');
   });
@@ -124,7 +124,7 @@ describe('immstruct', function () {
 
   it('should expose the instances internals', function () {
     immstruct('customKey', { 'foo': 'hello' });
-    immstruct.instances['customKey'].current.toJS().should.have.property('foo');
+    immstruct.instance('customKey').current.toJS().should.have.property('foo');
   });
 
 })
