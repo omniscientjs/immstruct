@@ -66,28 +66,15 @@ function Structure (options) {
       Infinity;
   }
 
-   this._referencelisteners = Immutable.Map();
-
+  this._referencelisteners = Immutable.Map();
   this.on('swap', function (newData, oldData, keyPath) {
-      var args = [keyPath, newData, oldData];
-      if (!keyPath || keyPath.length === 0) {
-          emit(
-              self._referencelisteners,
-              newData,
-              oldData,
-              [],
-              args
-          );
-      } else {
-          var path = keyPath[0];
-          emit(
-              self._referencelisteners.get(path),
-              newData.get(path),
-              oldData.get(path),
-              keyPath.slice(1),
-              args
-          );
-      }
+    var path, args = [keyPath, newData, oldData];
+    if (!keyPath || keyPath.length === 0) {
+      return emit(self._referencelisteners, newData, oldData, [], args);
+    }
+    path = keyPath[0];
+    emit(self._referencelisteners.get(path), newData.get(path), oldData.get(path),
+      keyPath.slice(1), args);
   });
 
   EventEmitter.call(this, arguments);
@@ -97,33 +84,24 @@ module.exports = Structure;
 var FUNCTION_KEY = {};
 
 function emit(map, newData, oldData, path, args) {
+  if (!map || newData === oldData) return;
+  map.get(FUNCTION_KEY, []).forEach(function (fn) {
+    fn.apply(null, args);
+  });
 
-    if (map && newData !== oldData) {
-        map.get(FUNCTION_KEY, []).forEach(function (fn) {
-            fn.apply(null, args);
-        });
-        if (path.length > 0) {
-            var path2 = path[0];
-            emit(map.get(path2), newData.get(path2), oldData.get(path2), path.slice(1), args);
-        } else {
-            map.forEach(function(value, key) {
-                if (key !== FUNCTION_KEY) {
-                    emit(value, newData.get(key), oldData.get(key), [], args);
-                }
-            });
-        }
-    }
-}
+  if (path.length > 0) {
+    var nextPathRoot = path[0];
+    if (!newData.get) return;
+    return emit(map.get(nextPathRoot), newData.get(nextPathRoot),
+      oldData.get(nextPathRoot), path.slice(1), args);
+  }
 
-function subscribe(listeners, path, fn) {
-    return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
-        return old.add(fn);
-    });
-}
-function unsubscribe(listeners, path, fn) {
-    return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
-        return old.remove(fn);
-    });
+  map.forEach(function(value, key) {
+    if (key === FUNCTION_KEY) return;
+    var passedNewData = (newData && newData.get) ? newData.get(key) : newData;
+    var passedOldData = (oldData && oldData.get) ? oldData.get(key) : oldData;
+    emit(value, passedNewData, passedOldData, [], args);
+  });
 }
 
 /**
@@ -225,13 +203,12 @@ Structure.prototype.reference = function (path) {
       unobservers = Immutable.Set();
 
   function cursorRefresher() {cursor = self.cursor(path); }
-
-    var _subscribe = function (path, fn) {
-            self._referencelisteners = subscribe(self._referencelisteners, path, fn);
-        },
-        _unsubscribe = function (path, fn) {
-            self._referencelisteners = unsubscribe(self._referencelisteners, path, fn);
-        };
+  function _subscribe (path, fn) {
+    self._referencelisteners = subscribe(self._referencelisteners, path, fn);
+  }
+  function _unsubscribe (path, fn) {
+    self._referencelisteners = unsubscribe(self._referencelisteners, path, fn);
+  }
 
   _subscribe(path, cursorRefresher);
 
@@ -277,7 +254,7 @@ Structure.prototype.reference = function (path) {
       _subscribe(path, newFn);
       unobservers = unobservers.add(newFn);
 
-      return function() {
+      return function unobserve () {
         _unsubscribe(path, newFn);
       };
     },
@@ -317,6 +294,7 @@ Structure.prototype.reference = function (path) {
      * @returns {Void}
      */
     unobserveAll: function (destroy) {
+      if (this._dead) return void 0;
       unobservers.forEach(function(fn) {
         _unsubscribe(path, fn);
       });
@@ -343,6 +321,10 @@ Structure.prototype.reference = function (path) {
       this.unobserveAll = void 0;
       this.cursor = void 0;
       this.destroy = void 0;
+
+      cursorRefresher = void 0;
+      _unsubscribe = void 0;
+      _subscribe = void 0;
     }
   };
 };
@@ -429,6 +411,18 @@ Structure.prototype.undoUntil = function(structure) {
   return structure;
 };
 
+
+function subscribe(listeners, path, fn) {
+  return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+    return old.add(fn);
+  });
+}
+
+function unsubscribe(listeners, path, fn) {
+  return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+    return old.remove(fn);
+  });
+}
 
 // Private decorators.
 
@@ -571,10 +565,6 @@ function isImmutableStructure (data) {
 
 function immutableSafeCheck (ns, method, data) {
   return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
-}
-
-function invoke (fn) {
-  return fn();
 }
 
 function valToKeyPath(val) {

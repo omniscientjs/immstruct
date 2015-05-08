@@ -732,6 +732,53 @@ describe('structure', function () {
       ref.should.have.property('unobserveAll');
     });
 
+    it('should listen to paths before they are created', function (done) {
+      var structure = new Structure({ data: {} });
+      var i = 0;
+
+      var ref = structure.reference('foo');
+      ref.observe(function (data) {
+        if (i++ === 0) {
+          ref.cursor().deref().should.eql('hello world');
+        } else {
+          ref.cursor().toJS().should.eql({ value: 10 });
+          done();
+        }
+      });
+
+      structure.cursor().update(function() {
+        return Immutable.fromJS({ foo: 'hello world' });
+      });
+
+
+      structure.cursor().update(function() {
+        return Immutable.fromJS({ foo: { value: 10 } });
+      });
+    });
+
+    it('should listen to nested paths before they are created', function (done) {
+      var structure = new Structure({ data: {} });
+      var i = 0;
+
+      var ref = structure.reference(['foo', 'value']);
+      ref.observe(function () {
+        if (i++ === 0) {
+          expect(ref.cursor().deref()).to.be.not.ok();
+        } else {
+          ref.cursor().deref().should.eql(10);
+          done();
+        }
+      });
+
+      structure.cursor().update(function() {
+        return Immutable.fromJS({ foo: 'hello world' });
+      });
+
+      structure.cursor().update(function() {
+        return Immutable.fromJS({ foo: { value: 10 } });
+      });
+    });
+
     it('should create cursor for value', function () {
       var structure = new Structure({
         data: { 'foo': 'bar' }
