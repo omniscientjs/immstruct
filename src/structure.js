@@ -2,9 +2,8 @@
 
 var Immutable = require('immutable');
 var Cursor = require('immutable/contrib/cursor/index');
-var EventEmitter = require('eventemitter3').EventEmitter;
+var EventEmitter = require('eventemitter3');
 var utils = require('./utils');
-
 
 var LISTENER_SENTINEL = {};
 

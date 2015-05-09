@@ -3,7 +3,7 @@ chai.should();
 
 var immstruct = require('../');
 
-var EventEmitter = require('eventemitter3').EventEmitter;
+var EventEmitter = require('eventemitter3');
 
 describe('immstruct', function () {
 

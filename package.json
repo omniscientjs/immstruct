@@ -32,8 +32,8 @@
   },
   "homepage": "https://github.com/omniscientjs/immstruct",
   "dependencies": {
-    "eventemitter3": "^0.1.6",
-    "immutable": "^3.0.2"
+    "eventemitter3": "^1.0.2",
+    "immutable": "^3.7.2"
   },
   "devDependencies": {
     "browserify": "^8.1.3",
