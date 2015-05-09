@@ -82,11 +82,10 @@ function Structure (options) {
 }
 inherits(Structure, EventEmitter);
 module.exports = Structure;
-var FUNCTION_KEY = {};
 
 function emit(map, newData, oldData, path, args) {
   if (!map || newData === oldData) return;
-  map.get(FUNCTION_KEY, []).forEach(function (fn) {
+  map.get(LISTENER_SENTINEL, []).forEach(function (fn) {
     fn.apply(null, args);
   });
 
@@ -98,7 +97,7 @@ function emit(map, newData, oldData, path, args) {
   }
 
   map.forEach(function(value, key) {
-    if (key === FUNCTION_KEY) return;
+    if (key === LISTENER_SENTINEL) return;
     var passedNewData = (newData && newData.get) ? newData.get(key) : newData;
     var passedOldData = (oldData && oldData.get) ? oldData.get(key) : oldData;
     emit(value, passedNewData, passedOldData, [], args);
@@ -414,13 +413,13 @@ Structure.prototype.undoUntil = function(structure) {
 
 
 function subscribe(listeners, path, fn) {
-  return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+  return listeners.updateIn(path.concat(LISTENER_SENTINEL), Immutable.OrderedSet(), function(old) {
     return old.add(fn);
   });
 }
 
 function unsubscribe(listeners, path, fn) {
-  return listeners.updateIn(path.concat(FUNCTION_KEY), Immutable.OrderedSet(), function(old) {
+  return listeners.updateIn(path.concat(LISTENER_SENTINEL), Immutable.OrderedSet(), function(old) {
     return old.remove(fn);
   });
 }
