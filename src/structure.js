@@ -53,6 +53,7 @@ function Structure (options) {
 
   this.key = options.key || utils.generateRandomKey();
 
+  this._queuedChange = false;
   this.current = options.data;
   if (!isImmutableStructure(this.current) || !this.current) {
     this.current = Immutable.fromJS(this.current || {});
@@ -445,23 +446,18 @@ function handleHistory (emitter, fn) {
   };
 }
 
+var _requestAnimationFrame = (typeof window !== 'undefined' && window.requestAnimationFrame) || function () { };
+
 // Update history if history is active
-var possiblyEmitAnimationFrameEvent = (function () {
-  var queuedChange = false;
-  if (typeof requestAnimationFrame !== 'function') {
-    return function () {};
-  }
+function possiblyEmitAnimationFrameEvent (emitter, newStructure, oldData, keyPath) {
+  if (emitter._queuedChange) return;
+  emitter._queuedChange = true;
 
-  return function requestAnimationFrameEmitter (emitter, newStructure, oldData, keyPath) {
-    if (queuedChange) return;
-    queuedChange = true;
-
-    requestAnimationFrame(function () {
-      queuedChange = false;
-      emitter.emit('next-animation-frame', newStructure, oldData, keyPath);
-    });
-  };
-}());
+  _requestAnimationFrame(function () {
+    emitter._queuedChange = false;
+    emitter.emit('next-animation-frame', newStructure, oldData, keyPath);
+  });
+}
 
 // Emit swap event on values are swapped
 function handleSwap (emitter, fn) {
