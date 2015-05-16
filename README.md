@@ -29,7 +29,8 @@ var newCursor = cursor.update(function (x) {
   return x + 1;
 });
 
-// The value of the old `cursor` to is still `1`
+// We unwrap the cursor, by getting the data it is pointing at using defer
+// and see that the value of the old `cursor` to is still `1`
 console.log(cursor.deref()); //=> 1
 
 // `newCursor` points to the new data
@@ -48,6 +49,7 @@ var updatedCursor = cursor.update(function (x) { // triggers `swap` in somefile.
   return x + 1;
 });
 
+// Unwrap the value
 console.log(updatedCursor.deref()); //=> 3
 ```
 
