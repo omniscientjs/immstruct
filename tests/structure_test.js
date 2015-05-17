@@ -167,7 +167,7 @@ describe('structure', function () {
         data: { 'foo': 'hello' }
       });
 
-      structure.on('change', function (path, newValue, oldValue) {
+      structure.on('change', function (newValue, oldValue, path) {
         path.should.eql(['foo']);
         oldValue.should.equal('hello');
         newValue.should.equal('bar');
@@ -187,7 +187,7 @@ describe('structure', function () {
         data: { 'foo': true }
       });
       var i = 0;
-      structure.on('change', function (path, newValue, oldValue) {
+      structure.on('change', function (newValue, oldValue, path) {
         path.should.eql(['foo']);
         switch(i) {
           case 0:
@@ -226,7 +226,7 @@ describe('structure', function () {
         data: { 'foo': 'hello' }
       });
 
-      structure.on('add', function (path, newValue) {
+      structure.on('add', function (newValue, path) {
         path.should.eql(['bar']);
         newValue.should.equal('baz');
         structure.current.toJS().should.eql({
@@ -247,7 +247,7 @@ describe('structure', function () {
         data: { 'foo': 'hello' }
       });
       var i = 1;
-      structure.on('add', function (path, newValue) {
+      structure.on('add', function (newValue, path) {
         path.should.eql([i+'']);
         switch(i) {
           case 1:
@@ -281,7 +281,7 @@ describe('structure', function () {
         data: { 'foo': 'hello', 'bar': 'world' }
       });
 
-      structure.on('delete', function (path, oldValue) {
+      structure.on('delete', function (oldValue, path) {
         path.should.eql(['foo']);
         oldValue.should.equal('hello');
         structure.cursor().toJS().should.eql({ 'bar': 'world' });
@@ -339,7 +339,7 @@ describe('structure', function () {
             done();
           }
         });
-        structure.once('change', function (path, newValue, oldValue) {
+        structure.once('change', function (newValue, oldValue, path) {
           path.should.eql(['subtree']);
           newValue.toJS().should.eql({ foo: 'bar' });
           oldValue.toJS().should.eql({});
@@ -417,10 +417,9 @@ describe('structure', function () {
             done();
           }
         });
-        structure.once('add', function (path, newValue, oldValue) {
+        structure.once('add', function (newValue, path) {
           path.should.eql(['subtree']);
           newValue.toJS().should.eql({ foo: 'bar' });
-          expect(oldValue).to.be.undefined();
           structure.cursor('subtree').update('hello',function() {
             return 'world';
           });
@@ -494,7 +493,7 @@ describe('structure', function () {
             done();
           }
         });
-        structure.once('delete', function (path, newValue) {
+        structure.once('delete', function (newValue, path) {
           path.should.eql(['subtree']);
           newValue.toJS().should.eql({});
           structure.cursor('subtree').update('hello',function() {
@@ -944,7 +943,7 @@ describe('structure', function () {
         });
 
         var ref = structure.reference('foo');
-        ref.observe('swap', function (keyPath, newData, oldData) {
+        ref.observe('swap', function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
           newData.toJS().should.eql({ 'foo': 'updated' });
           oldData.toJS().should.eql({ 'foo': 'bar' });
@@ -959,7 +958,7 @@ describe('structure', function () {
         });
 
         var ref = structure.reference('foo');
-        ref.observe(function (keyPath, newData, oldData) {
+        ref.observe(function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
           newData.toJS().should.eql({ 'foo': 'updated' });
           oldData.toJS().should.eql({ 'foo': 'bar' });
@@ -976,7 +975,7 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('change', function (keyPath, newData, oldData) {
+        ref.observe('change', function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
           newData.should.equal('updated');
           oldData.should.equal('bar');
@@ -993,7 +992,7 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('delete', function (keyPath, oldData) {
+        ref.observe('delete', function (oldData, keyPath) {
           keyPath.should.eql(['foo']);
           oldData.should.eql('bar');
           done();
@@ -1009,7 +1008,7 @@ describe('structure', function () {
         var ref = structure.reference('bar');
         ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
         ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('add', function (keyPath, newData) {
+        ref.observe('add', function (newData, keyPath) {
           keyPath.should.eql(['bar']);
           newData.should.eql('baz');
           done();

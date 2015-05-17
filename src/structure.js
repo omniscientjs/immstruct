@@ -11,6 +11,9 @@ var LISTENER_SENTINEL = {};
  * Creates a new `Structure` instance. Also accessible through
  * `Immstruct.Structre`.
  *
+ * A structure is also an EventEmitter object, so it has methods as
+ * `.on`, `.off`, and all other EventEmitter methods.
+ *
  * ### Examples:
  *
  *     var Structure = require('immstruct/structure');
@@ -18,6 +21,14 @@ var LISTENER_SENTINEL = {};
  *
  *     // Or:
  *     // var Structure = require('immstruct').Structure;
+ *
+ * ### Events
+ *
+ * * `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+ * * `next-animation-frame`: Same as `swap`, but only emitted on animation frame. Could use with many render updates and better performance. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+ * * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue`, `oldValue` and `path`.
+ * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
+ * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
  *
  * ### Options
  *
@@ -68,10 +79,11 @@ function Structure (options) {
 
   this._referencelisteners = Immutable.Map();
   this.on('swap', function (newData, oldData, keyPath) {
-    var path, args = [keyPath, newData, oldData];
+    var path, args = [newData, oldData, keyPath];
     if (!keyPath || keyPath.length === 0) {
       return emit(self._referencelisteners, newData, oldData, [], args);
     }
+
     path = keyPath[0];
     emit(self._referencelisteners.get(path), newData.get(path), oldData.get(path),
       keyPath.slice(1), args);
@@ -213,7 +225,8 @@ Structure.prototype.reference = function (path) {
 
   return {
     /**
-     * Observe for changes on a reference.
+     * Observe for changes on a reference. On references you can observe for changes,
+     * but a reference **is not** an EventEmitter it self.
      *
      * ### Examples:
      *
@@ -225,13 +238,12 @@ Structure.prototype.reference = function (path) {
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
-     * ### Event names
-     * Event names can be either
+     * ### Events
+     * * `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+     * * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue`, `oldValue` and `path`.
+     * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
+     * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
      *
-     *  * `add`: When new data/value is added
-     *  * `delete`: When data/value is removed
-     *  * `change`: When data/value is updated and it existed before
-     *  * `swap`: When cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components
      *
      * @param {String} [eventName] - Type of change
      * @param {Function} callback - Callback when referenced data is swapped
@@ -506,13 +518,13 @@ function analyze (newData, oldData, path) {
 
   if (inOld && !inNew) {
     eventName = 'delete';
-    args = [path, oldObject];
+    args = [oldObject, path];
   } else if (inOld && inNew) {
     eventName = 'change';
-    args = [path, newObject, oldObject];
+    args = [newObject, oldObject, path];
   } else if (!inOld && inNew) {
     eventName = 'add';
-    args = [path, newObject];
+    args = [newObject, path];
   }
 
   return {
@@ -529,7 +541,7 @@ function hasIn(cursor, path) {
 }
 
 function onlyOnEvent(eventName, fn) {
-  return function (keyPath, newData, oldData) {
+  return function (newData, oldData, keyPath) {
     var info = analyze(newData, oldData, keyPath);
     if (info.eventName !== eventName) return;
     return fn.apply(fn, info.args);
