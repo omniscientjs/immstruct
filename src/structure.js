@@ -427,7 +427,7 @@ function unsubscribe(listeners, path, fn) {
 
 // Update history if history is active
 function handleHistory (emitter, fn) {
-  return function (newData, oldData, path) {
+  return function handleHistoryFunction (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
     if (!emitter.history || (newData === oldData)) return newStructure;
 
@@ -459,7 +459,7 @@ function possiblyEmitAnimationFrameEvent (emitter, newStructure, oldData, keyPat
 
 // Emit swap event on values are swapped
 function handleSwap (emitter, fn) {
-  return function (newData, oldData, keyPath) {
+  return function handleSwapFunction (newData, oldData, keyPath) {
     var newStructure = fn.apply(fn, arguments);
     if(newData === oldData) return newStructure;
 
@@ -472,7 +472,7 @@ function handleSwap (emitter, fn) {
 
 // Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
-  return function (newData, oldData, path) {
+  return function handlePersistingFunction (newData, oldData, path) {
     var newStructure = fn.apply(fn, arguments);
     if(newData === oldData) return newStructure;
     var info = analyze(newData, oldData, path);
