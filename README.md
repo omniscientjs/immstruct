@@ -29,7 +29,7 @@ var newCursor = cursor.update(function (x) {
   return x + 1;
 });
 
-// We unwrap the cursor, by getting the data it is pointing at using defer
+// We unwrap the cursor, by getting the data it is pointing at using deref
 // and see that the value of the old `cursor` to is still `1`
 console.log(cursor.deref()); //=> 1
 
