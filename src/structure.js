@@ -588,5 +588,5 @@ function inherits (c, p) {
     e[k] = Object.getOwnPropertyDescriptor(c.prototype, k)
   });
   c.prototype = Object.create(p.prototype, e)
-  c.super = p
+  c['super'] = p
 }
