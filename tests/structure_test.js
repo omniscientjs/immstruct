@@ -354,7 +354,7 @@ describe('structure', function () {
         });
       });
 
-      it('should resync immutable collection when a stale cursor changed existing property', function() {
+      it('should avoid stale cursor changed existing property', function() {
 
         var struct = new Structure({
           data: { foo: 42, bar: 24 }
@@ -382,10 +382,7 @@ describe('structure', function () {
 
         current = struct.current;
         struct.once('swap', function(newRoot, oldRoot) {
-          oldRoot.toJS().should.eql({ foo: 42, bar: 24 });
-          bar._rootData.should.equal(oldRoot);
-
-          current.toJS().should.not.eql(oldRoot.toJS());
+          oldRoot.toJS().should.eql({ foo: 43, bar: 24 });
           current.toJS().should.not.eql(newRoot.toJS());
           newRoot.toJS().should.not.eql(oldRoot.toJS());
 
@@ -431,7 +428,7 @@ describe('structure', function () {
         });
       });
 
-      it('should resync immutable collection when a stale cursor adds new property', function() {
+      it('should avoid stale cursor when adding a new property', function() {
 
         var struct = new Structure({
           data: { foo: {}, bar: {} }
@@ -458,10 +455,9 @@ describe('structure', function () {
 
         current = struct.current;
         struct.once('swap', function(newRoot, oldRoot) {
-          oldRoot.toJS().should.eql({ foo: {}, bar: {} });
-          bar._rootData.should.equal(oldRoot);
+          oldRoot.toJS().should.eql({ foo: {a: 42}, bar: {} });
 
-          current.toJS().should.not.eql(oldRoot.toJS());
+          current.toJS().should.eql(oldRoot.toJS());
           current.toJS().should.not.eql(newRoot.toJS());
           newRoot.toJS().should.not.eql(oldRoot.toJS());
 
@@ -503,7 +499,7 @@ describe('structure', function () {
         structure.cursor().delete('subtree');
       });
 
-      it('should resync immutable collection when a stale cursor deletes existing property', function() {
+      it('should avoid stale cursor when deleting existing property', function() {
 
         var struct = new Structure({
           data: { foo: { a: 42 }, bar: { b: 24 } }
@@ -528,10 +524,9 @@ describe('structure', function () {
 
         current = struct.current;
         struct.once('swap', function(newRoot, oldRoot) {
-          oldRoot.toJS().should.eql({ foo: { a: 42 }, bar: { b: 24 } });
-          bar._rootData.should.equal(oldRoot);
+          oldRoot.toJS().should.eql({ foo: { }, bar: { b: 24 } });
 
-          current.toJS().should.not.eql(oldRoot.toJS());
+          current.toJS().should.eql(oldRoot.toJS());
           current.toJS().should.not.eql(newRoot.toJS());
           newRoot.toJS().should.not.eql(oldRoot.toJS());
 

@@ -513,11 +513,12 @@ function possiblyEmitAnimationFrameEvent (emitter, newStructure, oldData, keyPat
 // Emit swap event on values are swapped
 function handleSwap (emitter, fn) {
   return function handleSwapFunction (newData, oldData, keyPath) {
+    var previous = emitter.current;
     var newStructure = fn.apply(fn, arguments);
-    if(newData === oldData) return newStructure;
+    if(newData === previous) return newStructure;
 
-    emitter.emit('swap', newStructure, oldData, keyPath);
-    possiblyEmitAnimationFrameEvent(emitter, newStructure, oldData, keyPath);
+    emitter.emit('swap', newStructure, previous, keyPath);
+    possiblyEmitAnimationFrameEvent(emitter, newStructure, previous, keyPath);
 
     return newStructure;
   };
@@ -526,9 +527,10 @@ function handleSwap (emitter, fn) {
 // Map changes to update events (delete/change/add).
 function handlePersisting (emitter, fn) {
   return function handlePersistingFunction (newData, oldData, path) {
+    var previous = emitter.current;
     var newStructure = fn.apply(fn, arguments);
-    if(newData === oldData) return newStructure;
-    var info = analyze(newData, oldData, path);
+    if(newData === previous) return newStructure;
+    var info = analyze(newData, previous, path);
 
     if (info.eventName) {
       emitter.emit.apply(emitter, [info.eventName].concat(info.args));
