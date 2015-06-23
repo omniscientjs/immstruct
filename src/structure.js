@@ -24,9 +24,14 @@ var LISTENER_SENTINEL = {};
  *
  * ### Events
  *
- * * `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
- * * `next-animation-frame`: Same as `swap`, but only emitted on animation frame. Could use with many render updates and better performance. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
- * * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue`, `oldValue` and `path`.
+ * * `swap`: Emitted when cursor is updated (new information is set). Emits no
+ *   values. One use case for this is to re-render design components. Callback
+ *   is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+ * * `next-animation-frame`: Same as `swap`, but only emitted on animation frame.
+ *   Could use with many render updates and better performance. Callback is passed
+ *   arguments: `newStructure`, `oldStructure`, `keyPath`.
+ * * `change`: Emitted when data/value is updated and it existed before. Emits
+ *   values: `newValue`, `oldValue` and `path`.
  * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
  * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
  *
@@ -46,7 +51,8 @@ var LISTENER_SENTINEL = {};
  * @property {String} key Generated or provided key.
  *
  *
- * @param {{ key: String, data: Object, history: Boolean }} [options] - defaults to random key and empty data (immutable structure). No history
+ * @param {{ key: String, data: Object, history: Boolean }} [options] - defaults
+ *  to random key and empty data (immutable structure). No history
  *
  * @constructor
  * @class {Structure}
@@ -118,6 +124,10 @@ function emit(map, newData, oldData, path, args) {
 /**
  * Create a Immutable.js Cursor for a given `path` on the `current` structure (see `Structure.current`).
  * Changes made through created cursor will cause a `swap` event to happen (see `Events`).
+ *
+ * **This method returns a
+ * [Immutable.js Cursor](https://github.com/facebook/immutable-js/blob/master/contrib/cursor/index.d.ts).
+ * See the Immutable.js docs for more info on how to use cursors.**
  *
  * ### Examples:
  *
@@ -195,7 +205,8 @@ Structure.prototype.cursor = function (path) {
  *
  * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
  *
- * @param {String|Array|Cursor} [path|cursor] - defaults to empty string. Can be array for path or use path of cursor. See Immutable.js Cursors
+ * @param {String|Array|Cursor} [path|cursor] - defaults to empty string. Can be
+ * array for path or use path of cursor. See Immutable.js Cursors
  *
  * @api public
  * @module structure.reference
@@ -239,8 +250,11 @@ Structure.prototype.reference = function reference (path) {
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
      * ### Events
-     * * `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
-     * * `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue`, `oldValue` and `path`.
+     * * `swap`: Emitted when cursor is updated (new information is set).
+     *   Emits no values. One use case for this is to re-render design components.
+     *   Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+     * * `change`: Emitted when data/value is updated and it existed before.
+     *   Emits values: `newValue`, `oldValue` and `path`.
      * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
      * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
      *
@@ -482,7 +496,8 @@ function handleHistory (emitter, fn) {
   };
 }
 
-var _requestAnimationFrame = (typeof window !== 'undefined' && window.requestAnimationFrame) || function () { };
+var _requestAnimationFrame = (typeof window !== 'undefined' &&
+  window.requestAnimationFrame) || function () { };
 
 // Update history if history is active
 function possiblyEmitAnimationFrameEvent (emitter, newStructure, oldData, keyPath) {
@@ -530,7 +545,7 @@ function unobserver(listenerNs, observerFn) {
     if (fnIndex > -1) {
       listenerNs.splice(fnIndex, 1);
     }
-  }
+  };
 }
 
 function analyze (newData, oldData, path) {
@@ -611,8 +626,8 @@ function valToKeyPath(val) {
 function inherits (c, p) {
   var e = {};
   Object.getOwnPropertyNames(c.prototype).forEach(function (k) {
-    e[k] = Object.getOwnPropertyDescriptor(c.prototype, k)
+    e[k] = Object.getOwnPropertyDescriptor(c.prototype, k);
   });
-  c.prototype = Object.create(p.prototype, e)
-  c['super'] = p
+  c.prototype = Object.create(p.prototype, e);
+  c['super'] = p;
 }

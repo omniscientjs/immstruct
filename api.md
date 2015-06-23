@@ -19,7 +19,7 @@ of Structure instances.
 
 
 
-**Returns** `Immstruct`,
+**Returns** `Immstruct`, 
 
 
 ### `immstruct.get([key], [data])`
@@ -43,7 +43,23 @@ var structure = immstruct.get('myStruct', { foo: 'Hello' });
 
 
 
-**Returns** `Structure`,
+**Returns** `Structure`, 
+
+
+### `immstruct.getInstances([name])`
+
+Get list of all instances created.
+
+
+### Parameters
+
+| param    | type   | description                                                                |
+| -------- | ------ | -------------------------------------------------------------------------- |
+| `[name]` | String | _optional:_ - Name of the instance to get. If undefined get all instances  |
+
+
+
+**Returns** `Array`, 
 
 
 ### `immstruct.clear`
@@ -78,7 +94,7 @@ Provided by key
 
 
 
-**Returns** `Boolean`,
+**Returns** `Boolean`, 
 
 
 ### `immstruct.withHistory([key], [limit], [data])`
@@ -89,28 +105,31 @@ activated per default. Same usage and signature as regular `Immstruct.get`.
 Provide optional key to be able to retrieve it from list of instances.
 If no key is provided, a random key will be generated.
 
-Provide optional limit to cap the last number of history references that
-will be kept. Once limit is reached, a new history record shifts off the
-oldest record. The default if omitted is Infinity. Setting to 0 is the
-as not having history enabled in the first place.
+Provide optional limit to cap the last number of history references
+that will be kept. Once limit is reached, a new history record
+shifts off the oldest record. The default if omitted is Infinity.
+Setting to 0 is the as not having history enabled in the first place.
 
 ### Examples:
 
     var immstruct = require('immstruct');
+    var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
+    var structure = immstruct.withHistory(10, { foo: 'Hello' });
     var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
+    var structure = immstruct.withHistory({ foo: 'Hello' });
 
 
 ### Parameters
 
-| param    | type             | description                             |
-| -------- | ---------------- | --------------------------------------- |
-| `[key]`  | String           | _optional:_ - defaults to random string |
-| `[limit]`| Positive Integer | _optional:_ - defaults to Infinity      |
-| `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
+| param     | type             | description                             |
+| --------- | ---------------- | --------------------------------------- |
+| `[key]`   | String           | _optional:_ - defaults to random string |
+| `[limit]` | Number           | _optional:_ - defaults to Infinity      |
+| `[data]`  | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
 
-**Returns** `Structure`,
+**Returns** `Structure`, 
 
 
 ### `immstruct([key], [data])`
@@ -143,13 +162,16 @@ is provided, a random key will be generated.
 
 
 
-**Returns** `Structure,Function`,
+**Returns** `Structure,Function`, 
 
 
 ### `Structure([options])`
 
 Creates a new `Structure` instance. Also accessible through
 `Immstruct.Structre`.
+
+A structure is also an EventEmitter object, so it has methods as
+`.on`, `.off`, and all other EventEmitter methods.
 
 ### Examples:
 
@@ -159,22 +181,37 @@ Creates a new `Structure` instance. Also accessible through
     // Or:
     // var Structure = require('immstruct').Structure;
 
+### Events
+
+* `swap`: Emitted when cursor is updated (new information is set). Emits no
+  values. One use case for this is to re-render design components. Callback
+  is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+* `next-animation-frame`: Same as `swap`, but only emitted on animation frame.
+  Could use with many render updates and better performance. Callback is passed
+  arguments: `newStructure`, `oldStructure`, `keyPath`.
+* `change`: Emitted when data/value is updated and it existed before. Emits
+  values: `newValue`, `oldValue` and `path`.
+* `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
+* `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
+
 ### Options
 
 ```
 {
   key: String, // Defaults to random string
   data: Object|Immutable, // defaults to empty Map
-  history: Boolean // Defaults to false
+  history: Boolean, // Defaults to false
+  historyLimit: Number, // If history enabled, Defaults to Infinity
 }
 ```
 
 
 ### Parameters
 
-| param       | type                                                                                   | description                                                                            |
-| ----------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `[options]` | { key: <code>String</code>, data: <code>Object</code>, history: <code>Boolean</code> } | _optional:_ - defaults to random key and empty data (immutable structure). No history  |
+| param       | type                                                                                   | description                                                                             |
+| ----------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `[options]` | { key: <code>String</code>, data: <code>Object</code>, history: <code>Boolean</code> } | _optional:_ - defaults  to random key and empty data (immutable structure). No history
+ |
 
 
 ### Properties
@@ -183,18 +220,22 @@ Creates a new `Structure` instance. Also accessible through
 | --------- | ---------------- | ------------------------------- |
 | `history` | Immutable.List   | `Immutable.List` with history.  |
 | `current` | Object,Immutable | Provided data as immutable data |
-| `key`     | String           | Generated or provided key.
+| `key`     | String           | Generated or provided key. 
     |
 
 
 
-**Returns** `Structure`,
+**Returns** `Structure`, 
 
 
 ### `structure.cursor([path])`
 
 Create a Immutable.js Cursor for a given `path` on the `current` structure (see `Structure.current`).
 Changes made through created cursor will cause a `swap` event to happen (see `Events`).
+
+**This method returns a
+[Immutable.js Cursor](https://github.com/facebook/immutable-js/blob/master/contrib/cursor/index.d.ts).
+See the Immutable.js docs for more info on how to use cursors.**
 
 ### Examples:
 
@@ -218,7 +259,7 @@ See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/
 **Returns** `Cursor`, Gives a Cursor from Immutable.js
 
 
-### `structure.reference([path])`
+### `structure.reference([path|cursor])`
 
 Creates a reference. A reference can be a pointer to a cursor, allowing
 you to create cursors for a specific path any time. This is essentially
@@ -253,18 +294,20 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Parameters
 
-| param    | type         | description                                                                              |
-| -------- | ------------ | ---------------------------------------------------------------------------------------- |
-| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+| param           | type                | description                                                                                                    |
+| --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `[path|cursor]` | String,Array,Cursor | _optional:_ - defaults to empty string. Can be array for path or use path of cursor. See Immutable.js Cursors
+ |
 
 
 
-**Returns** `Reference`,
+**Returns** `Reference`, 
 
 
 ### `reference.observe([eventName], callback)`
 
-Observe for changes on a reference.
+Observe for changes on a reference. On references you can observe for changes,
+but a reference **is not** an EventEmitter it self.
 
 ### Examples:
 
@@ -276,13 +319,15 @@ Observe for changes on a reference.
 
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
-### Event names
-Event names can be either
+### Events
+* `swap`: Emitted when cursor is updated (new information is set).
+  Emits no values. One use case for this is to re-render design components.
+  Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+* `change`: Emitted when data/value is updated and it existed before.
+  Emits values: `newValue`, `oldValue` and `path`.
+* `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
+* `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
 
- * `add`: When new data/value is added
- * `delete`: When data/value is removed
- * `change`: When data/value is updated and it existed before
- * `swap`: When cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components
 
 
 ### Parameters
@@ -324,13 +369,40 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 **Returns** `Cursor`, Immutable.js cursor
 
 
+### `reference.reference([path])`
+
+Creates a reference on a lower level path. See creating normal references.
+
+### Examples:
+
+    var structure = immstruct({
+      someBox: { message: 'Hello World!' }
+    });
+    var ref = structure.reference('someBox');
+
+    var newReference = ref.reference('message');
+
+See more examples in the [readme](https://github.com/omniscientjs/immstruct)
+
+
+### Parameters
+
+| param    | type         | description                                                                              |
+| -------- | ------------ | ---------------------------------------------------------------------------------------- |
+| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+
+
+
+**Returns** `Reference`, 
+
+
 ### `reference.unobserveAll`
 
 Remove all observers from reference.
 
 
 
-**Returns** `Void`,
+**Returns** `Void`, 
 
 
 ### `reference.destroy`
@@ -340,7 +412,7 @@ For cleaning up memory.
 
 
 
-**Returns** `Void`,
+**Returns** `Void`, 
 
 
 ### `structure.forceHasSwapped(newData, oldData, keyPath)`
@@ -359,7 +431,7 @@ If newData is `null` current will be used.
 
 
 
-**Returns** `Void`,
+**Returns** `Void`, 
 
 
 ### `structure.undo(steps)`
@@ -419,4 +491,6 @@ Returns the same immutable structure as passed as argument.
 
 **Returns** `Object`, New Immutable structure after undo
 
-## Private members
+## Private members 
+
+
