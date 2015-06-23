@@ -5,6 +5,9 @@ A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/maste
 are updated. Handy for use with immutable pure components for views,
 like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
+*This documentation is for the current unreleased `v2.0.0`. See the
+[`v1.4.1` docs in the git history](https://github.com/omniscientjs/immstruct/blob/f6a56973f2b7b701217ac152dd49691f7ec234af/README.md)*
+
 ## Usage
 
 ```js
@@ -37,6 +40,8 @@ console.log(cursor.deref()); //=> 1
 console.log(newCursor.deref()); //=> 2
 ```
 
+**Note:** *The cursors you see here are cursors from Facebooks Immutable.js library. Read the
+complete API in [their repo](https://github.com/facebook/immutable-js/blob/master/contrib/cursor/index.d.ts).*
 
 ```js
 // anotherFile.js
@@ -56,7 +61,9 @@ console.log(updatedCursor.deref()); //=> 3
 ## References
 
 While Immutable.js cursors are immutable, Immstruct lets you create references
-to a piece of data from where cursors will always be fresh.
+to a piece of data from where cursors will always be fresh. The cursors you create
+are still immutable, but you have the ability to retrieve the newest and latest
+cursor pointing to a specific part of your immutable structure.
 
 ```js
 
