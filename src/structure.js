@@ -101,20 +101,20 @@ inherits(Structure, EventEmitter);
 module.exports = Structure;
 
 function emit(map, newData, oldData, path, args) {
-  if (!map || newData === oldData) return;
+  if (!map || newData === oldData) return void 0;
   map.get(LISTENER_SENTINEL, []).forEach(function (fn) {
     fn.apply(null, args);
   });
 
   if (path.length > 0) {
     var nextPathRoot = path[0];
-    if (!newData.get) return;
+    if (!newData.get) return void 0;
     return emit(map.get(nextPathRoot), newData.get(nextPathRoot),
       oldData.get(nextPathRoot), path.slice(1), args);
   }
 
   map.forEach(function(value, key) {
-    if (key === LISTENER_SENTINEL) return;
+    if (key === LISTENER_SENTINEL) return void 0;
     var passedNewData = (newData && newData.get) ? newData.get(key) : newData;
     var passedOldData = (oldData && oldData.get) ? oldData.get(key) : oldData;
     emit(value, passedNewData, passedOldData, [], args);
@@ -501,7 +501,7 @@ var _requestAnimationFrame = (typeof window !== 'undefined' &&
 
 // Update history if history is active
 function possiblyEmitAnimationFrameEvent (emitter, newStructure, oldData, keyPath) {
-  if (emitter._queuedChange) return;
+  if (emitter._queuedChange) return void 0;
   emitter._queuedChange = true;
 
   _requestAnimationFrame(function () {
@@ -541,15 +541,6 @@ function handlePersisting (emitter, fn) {
 
 // Private helpers.
 
-function unobserver(listenerNs, observerFn) {
-  return function() {
-    var fnIndex = listenerNs.indexOf(observerFn);
-    if (fnIndex > -1) {
-      listenerNs.splice(fnIndex, 1);
-    }
-  };
-}
-
 function analyze (newData, oldData, path) {
   var oldObject = oldData && oldData.getIn(path);
   var newObject = newData && newData.getIn(path);
@@ -586,7 +577,7 @@ function hasIn(cursor, path) {
 function onlyOnEvent(eventName, fn) {
   return function (newData, oldData, keyPath) {
     var info = analyze(newData, oldData, keyPath);
-    if (info.eventName !== eventName) return;
+    if (info.eventName !== eventName) return void 0;
     return fn.apply(fn, info.args);
   };
 }

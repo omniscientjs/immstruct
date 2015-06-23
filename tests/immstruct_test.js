@@ -23,6 +23,10 @@ describe('immstruct', function () {
     immstruct.should.have.property('Immstruct');
   });
 
+  it('should support creating a new immstruct structure without new (to be safe)', function () {
+    (immstruct.Immstruct()).should.be.instanceof(immstruct.Immstruct);
+  });
+
   it('should create empty immutable structure and random key if no input', function () {
     var structure = immstruct();
     structure.current.toJS().should.be.an('object');
@@ -59,6 +63,15 @@ describe('immstruct', function () {
     structure.current.toJS().should.be.an('object');
     structure.history.get(0).toJS().should.eql({ foo: 'bar' });
     var structureRef = immstruct('histAndKey');
+    structureRef.history.get(0).toJS().should.eql({ foo: 'bar' });
+  });
+
+  it('should be able to create structure with history and key on instance', function () {
+    var localImmstruct = new immstruct.Immstruct();
+    var structure = localImmstruct.withHistory('histAndKey', { foo: 'bar' });
+    structure.current.toJS().should.be.an('object');
+    structure.history.get(0).toJS().should.eql({ foo: 'bar' });
+    var structureRef = localImmstruct.instance('histAndKey');
     structureRef.history.get(0).toJS().should.eql({ foo: 'bar' });
   });
 
@@ -125,6 +138,11 @@ describe('immstruct', function () {
   it('should expose the instances internals', function () {
     immstruct('customKey', { 'foo': 'hello' });
     immstruct.instance('customKey').current.toJS().should.have.property('foo');
+  });
+
+  it('should expose all instances', function () {
+    immstruct('customKey', { 'foo': 'hello' });
+    immstruct.instance().customKey.current.toJS().should.have.property('foo');
   });
 
 })

@@ -9,6 +9,13 @@ describe('structure', function () {
 
 
   describe('api', function () {
+    it('should be new safe to avoid mishaps of forgetting new keyword', function () {
+      var structure = Structure({
+        data: { 'foo': 'hello' }
+      });
+
+      structure.should.be.instanceof(Structure);
+    });
 
     it('should expose immutable.js cursor', function () {
       var structure = new Structure({
