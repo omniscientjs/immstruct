@@ -195,14 +195,14 @@ Structure.prototype.cursor = function (path) {
  *
  * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
  *
- * @param {String|Array} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
+ * @param {String|Array|Cursor} [path|cursor] - defaults to empty string. Can be array for path or use path of cursor. See Immutable.js Cursors
  *
  * @api public
  * @module structure.reference
  * @returns {Reference}
  * @constructor
  */
-Structure.prototype.reference = function (path) {
+Structure.prototype.reference = function reference (path) {
   if (isCursor(path) && path._keyPath) {
     path = path._keyPath;
   }
@@ -295,6 +295,32 @@ Structure.prototype.reference = function (path) {
       subPath = valToKeyPath(subPath);
       if (subPath) return cursor.cursor(subPath);
       return cursor;
+    },
+
+    /**
+     * Creates a reference on a lower level path. See creating normal references.
+     *
+     * ### Examples:
+     *
+     *     var structure = immstruct({
+     *       someBox: { message: 'Hello World!' }
+     *     });
+     *     var ref = structure.reference('someBox');
+     *
+     *     var newReference = ref.reference('message');
+     *
+     * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
+     *
+     * @param {String|Array} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
+     *
+     * @api public
+     * @see structure.reference
+     * @module reference.reference
+     * @returns {Reference}
+     */
+    reference: function (subPath) {
+      subPath = valToKeyPath(subPath);
+      return self.reference((cursor._keyPath || []).concat(subPath));
     },
 
     /**

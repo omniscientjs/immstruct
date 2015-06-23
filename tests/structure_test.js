@@ -935,6 +935,28 @@ describe('structure', function () {
         structure.cursor('foo').update(function () { return 'updated'; });
       });
 
+      it('should trigger change listener for reference created from a reference', function (done) {
+        var structure = new Structure({
+          data: {
+            'foo': {
+              'bar': {
+                val: 1
+              }
+            }
+          }
+        });
+
+        var ref = structure.reference('foo');
+        var ref2 = ref.reference('bar');
+
+        ref2.cursor().toJS().should.eql({ val: 1 });
+        ref2.observe(function () {
+          ref2.cursor().toJS().should.eql({ val: 2 });
+          done();
+        });
+        ref.cursor(['bar', 'val']).update(function () { return 2; });
+      });
+
       it('should support nested paths', function () {
         var structure = new Structure({
           data: {
