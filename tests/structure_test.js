@@ -915,6 +915,16 @@ describe('structure', function () {
         structure.cursor().update(function (old) { return old.setIn(['a', 'b', 'c'], 'updated'); });
       });
 
+      it('should trigger change listener for reference created from a cursor', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference(structure.cursor('foo'));
+        ref.observe(function () { done(); });
+        ref.cursor().update(function () { return 'updated'; });
+      });
+
       it('should trigger change listener for reference when changing cursor from outside', function (done) {
         var structure = new Structure({
           data: { 'foo': 'bar' }
