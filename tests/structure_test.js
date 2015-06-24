@@ -85,7 +85,8 @@ describe('structure', function () {
       var structure = new Structure({
         data: { 'foo': 'hello' }
       });
-      structure.on('swap', function (newData, oldData) {
+      structure.on('swap', function (newData, oldData, keyPath) {
+        keyPath.should.eql(['foo']);
         newData.toJS().should.eql({'foo': 'bar'});
         oldData.toJS().should.eql({'foo': 'hello'});
         structure.cursor().toJS().should.eql({ 'foo': 'bar' });
@@ -94,6 +95,22 @@ describe('structure', function () {
 
       structure.cursor(['foo']).update(function () {
         return 'bar';
+      });
+    });
+
+    it('should trigger swap when structure is changed with new and old data on nested cursors', function (done) {
+      var structure = new Structure({
+        data: { 'foo': { 'bar': 'hello' } }
+      });
+      structure.on('swap', function (newData, oldData, keyPath) {
+        keyPath.should.eql(['foo', 'bar']);
+        newData.toJS().should.eql({ 'foo': { 'bar': 'bye' } });
+        oldData.toJS().should.eql({ 'foo': { 'bar': 'hello' } });
+        done();
+      });
+
+      structure.cursor(['foo']).cursor(['bar']).update(function () {
+        return 'bye';
       });
     });
 
@@ -979,8 +996,8 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe('swap', function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
-          newData.toJS().should.eql({ 'foo': 'updated' });
-          oldData.toJS().should.eql({ 'foo': 'bar' });
+          newData.should.eql('updated');
+          oldData.should.eql('bar');
           done();
         });
         structure.cursor('foo').update(function () { return 'updated'; });
@@ -994,11 +1011,59 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe(function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
-          newData.toJS().should.eql({ 'foo': 'updated' });
-          oldData.toJS().should.eql({ 'foo': 'bar' });
+          newData.should.eql('updated');
+          oldData.should.eql('bar');
           done();
         });
         structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should pass keyPath of the part that has actually changed', function (done) {
+        var structure = new Structure({
+          data: { 'foo': { 'bar': 'hello' } }
+        });
+
+        var numberOfCalls = 0;
+
+        var ref = structure.reference('foo');
+        ref.observe(function (newData, oldData, keyPath) {
+          numberOfCalls++;
+          keyPath.should.eql(['foo', 'bar']);
+          newData.toJS().should.eql({ 'bar': 'updated' });
+          oldData.toJS().should.eql({ 'bar': 'hello' });
+        });
+        ref.cursor().update(['bar'], function () { return 'updated'; });
+
+        structure = new Structure({
+          data: { 'foo': { 'bar': 'hello' } }
+        });
+
+        var ref2 = structure.reference('foo');
+        ref2.observe(function (newData, oldData, keyPath) {
+          numberOfCalls++;
+          keyPath.should.eql(['foo', 'bar']);
+          newData.toJS().should.eql({ 'bar': 'updated' });
+          oldData.toJS().should.eql({ 'bar': 'hello' });
+
+          numberOfCalls.should.equal(2);
+          done();
+        });
+        ref2.cursor('bar').update(function () { return 'updated'; });
+      });
+
+      it('should pass new and old object relative to reference path', function (done) {
+        var structure = new Structure({
+          data: { 'foo': { 'bar': 'hello' } }
+        });
+
+        var ref = structure.reference(['foo', 'bar']);
+        ref.observe(function (newData, oldData, keyPath) {
+          keyPath.should.eql(['foo', 'bar']);
+          newData.should.eql('updated');
+          oldData.should.eql('hello');
+          done();
+        });
+        ref.cursor().update(function () { return 'updated'; });
       });
 
       it('should trigger only change events when specifying event type', function (done) {
@@ -1016,6 +1081,34 @@ describe('structure', function () {
           done();
         });
         structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
+      it('should pass new object relative to reference path on specific event type', function (done) {
+        var structure = new Structure({
+          data: { 'foo': { 'bar': {} } }
+        });
+
+        var ref = structure.reference(['foo', 'bar', 'baz']);
+        ref.observe('add', function (newData, keyPath) {
+          keyPath.should.eql(['foo', 'bar', 'baz']);
+          newData.should.eql('inserted');
+          done();
+        });
+        ref.cursor().update(function () { return 'inserted'; });
+      });
+
+      it('should pass new object relative to reference path but full path on specific event type', function (done) {
+        var structure = new Structure({
+          data: { 'foo': { 'bar': {} } }
+        });
+
+        var ref = structure.reference('foo');
+        ref.observe('add', function (newData, keyPath) {
+          keyPath.should.eql(['foo', 'bar', 'baz']);
+          newData.should.eql('inserted');
+          done();
+        });
+        ref.cursor(['bar', 'baz']).update(function () { return 'inserted'; });
       });
 
       it('should trigger only delete events when specifying event type', function (done) {
