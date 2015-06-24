@@ -173,6 +173,44 @@ Creates a new `Structure` instance. Also accessible through
 A structure is also an EventEmitter object, so it has methods as
 `.on`, `.off`, and all other EventEmitter methods.
 
+
+For the `swap` event, the root structure (see `structure.current`) is passed
+as arguments, but for type specific events (`add`, `change` and `delete`), the
+actual changed value is passed.
+
+For instance:
+```js
+var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+
+structure.on('swap', function (newData, oldData, keyPath) {
+  keyPath.should.eql(['foo', 'bar']);
+  newData.toJS().should.eql({ 'foo': { 'bar': 'bye' } });
+  oldData.toJS().should.eql({ 'foo': { 'bar': 'hello' } });
+});
+
+structure.cursor(['foo', 'bar']).update(function () {
+ return 'bye';
+});
+```
+
+But for `change`
+```js
+var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+
+structure.on('change', function (newData, oldData, keyPath) {
+  keyPath.should.eql(['foo', 'bar']);
+  newData.should.eql('bye');
+  oldData.should.eql('hello');
+});
+
+structure.cursor(['foo', 'bar']).update(function () {
+ return 'bye';
+});
+```
+
+**All `keyPath`s passed to listeners are the full path to where the actual
+ change happened**
+
 ### Examples:
 
     var Structure = require('immstruct/structure');
@@ -183,8 +221,10 @@ A structure is also an EventEmitter object, so it has methods as
 
 ### Events
 
-* `swap`: Emitted when cursor is updated (new information is set). Emits no
-  values. One use case for this is to re-render design components. Callback
+* `swap`: Emitted when cursor is updated (new information is set). Is emitted
+  on all types of changes, additions and deletions. The passed structures are
+  always the root structure.
+  One use case for this is to re-render design components. Callback
   is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
 * `next-animation-frame`: Same as `swap`, but only emitted on animation frame.
   Could use with many render updates and better performance. Callback is passed
@@ -309,6 +349,43 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 Observe for changes on a reference. On references you can observe for changes,
 but a reference **is not** an EventEmitter it self.
 
+The passed `keyPath` to the listeners is always the full path to the actual change.
+See examples below.
+
+**Note**: As on `swap` for normal immstruct events, the passed arguments for
+the event is the root, not guaranteed to be the actual changed value.
+The structure is how ever scoped to the path passed in to the reference.
+
+For instance:
+
+```js
+var structure = immstruct({ 'foo': { 'bar': 'hello' } });
+var ref = structure.reference('foo');
+ref.observe(function (newData, oldData, keyPath) {
+  keyPath.should.eql(['foo', 'bar']);
+  newData.toJS().should.eql({ 'bar': 'updated' });
+  oldData.toJS().should.eql({ 'bar': 'hello' });
+});
+ref.cursor().update(['bar'], function () { return 'updated'; });
+```
+
+For type specific events, how ever, the actual changed value is passed,
+not the root data.
+
+For instance:
+
+```js
+var structure = immstruct({ 'foo': { 'bar': 'hello' } });
+var ref = structure.reference('foo');
+ref.observe('change', function (newValue, oldValue, keyPath) {
+  keyPath.should.eql(['foo', 'bar']);
+  newData.should.eql('updated');
+  oldData.should.eql('hello');
+});
+ref.cursor().update(['bar'], function () { return 'updated'; });
+```
+
+
 ### Examples:
 
     var ref = structure.reference(['someBox']);
@@ -320,8 +397,10 @@ but a reference **is not** an EventEmitter it self.
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Events
-* `swap`: Emitted when cursor is updated (new information is set).
-  Emits no values. One use case for this is to re-render design components.
+* `swap`: Emitted when any cursor is updated (new information is set).
+  Triggered in any change, both change, add and delete. One use case for
+  this is to re-render design components. Structures passed as arguments
+  are scoped to the path passed to the reference.
   Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
 * `change`: Emitted when data/value is updated and it existed before.
   Emits values: `newValue`, `oldValue` and `path`.
