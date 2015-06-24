@@ -1032,7 +1032,7 @@ describe('structure', function () {
           newData.toJS().should.eql({ 'bar': 'updated' });
           oldData.toJS().should.eql({ 'bar': 'hello' });
         });
-        ref.cursor(['bar']).update(function () { return 'updated'; });
+        ref.cursor('bar').update(function () { return 'updated'; });
 
         structure = new Structure({
           data: { 'foo': { 'bar': 'hello' } }
