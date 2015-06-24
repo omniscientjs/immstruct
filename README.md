@@ -8,6 +8,8 @@ like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js]
 *This documentation is for the current unreleased `v2.0.0`. See the
 [`v1.4.1` docs in the git history](https://github.com/omniscientjs/immstruct/blob/f6a56973f2b7b701217ac152dd49691f7ec234af/README.md)*
 
+See the [API References](./api.md) for more documentation and usage.
+
 ## Usage
 
 ```js
@@ -190,9 +192,16 @@ See [API Reference](./api.md).
 
 A Structure object is an event emitter and emits the following events:
 
-* `swap`: Emitted when cursor is updated (new information is set). Emits no values. One use case for this is to re-render design components. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
-* `next-animation-frame`: Same as `swap`, but only emitted on animation frame. Could use with many render updates and better performance. Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
-* `change`: Emitted when data/value is updated and it existed before. Emits values: `newValue`, `oldValue` and `path`.
+* `swap`: Emitted when cursor is updated (new information is set). Is emitted
+  on all types of changes, additions and deletions. The passed structures are
+  always the root structure.
+  One use case for this is to re-render design components. Callback
+  is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+* `next-animation-frame`: Same as `swap`, but only emitted on animation frame.
+  Could use with many render updates and better performance. Callback is passed
+  arguments: `newStructure`, `oldStructure`, `keyPath`.
+* `change`: Emitted when data/value is updated and it existed before. Emits
+ values: `newValue`, `oldValue` and `path`.
 * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
 
