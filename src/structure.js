@@ -148,10 +148,9 @@ function emit(map, newData, oldData, path, args) {
 
   if (path.length > 0) {
     var nextPathRoot = path[0];
-    if (!newData.get) return void 0;
-    var nextOldData = oldData && oldData.get ? oldData.get(nextPathRoot) : void 0;
-    return emit(map.get(nextPathRoot), newData.get(nextPathRoot),
-      nextOldData, path.slice(1), args);
+    var passedNewData = newData && newData.get ? newData.get(nextPathRoot) : newData;
+    var passedOldData = oldData && oldData.get ? oldData.get(nextPathRoot) : oldData;
+    return emit(map.get(nextPathRoot), passedNewData, passedOldData, path.slice(1), args);
   }
 
   map.forEach(function(value, key) {
