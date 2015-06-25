@@ -153,15 +153,15 @@ function emit(map, newData, oldData, path, args) {
 
   if (path.length > 0) {
     var nextPathRoot = path[0];
-    var passedNewData = newData && newData.get ? newData.get(nextPathRoot) : newData;
-    var passedOldData = oldData && oldData.get ? oldData.get(nextPathRoot) : oldData;
+    var passedNewData = newData && newData.get ? newData.get(nextPathRoot) : void 0;
+    var passedOldData = oldData && oldData.get ? oldData.get(nextPathRoot) : void 0;
     return emit(map.get(nextPathRoot), passedNewData, passedOldData, path.slice(1), args);
   }
 
   map.forEach(function(value, key) {
     if (key === LISTENER_SENTINEL) return void 0;
-    var passedNewData = (newData && newData.get) ? newData.get(key) : newData;
-    var passedOldData = (oldData && oldData.get) ? oldData.get(key) : oldData;
+    var passedNewData = (newData && newData.get) ? newData.get(key) : void 0;
+    var passedOldData = (oldData && oldData.get) ? oldData.get(key) : void 0;
     emit(value, passedNewData, passedOldData, [], args);
   });
 }
