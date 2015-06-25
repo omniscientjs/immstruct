@@ -149,8 +149,9 @@ function emit(map, newData, oldData, path, args) {
   if (path.length > 0) {
     var nextPathRoot = path[0];
     if (!newData.get) return void 0;
+    var nextOldData = oldData && oldData.get ? oldData.get(nextPathRoot) : void 0;
     return emit(map.get(nextPathRoot), newData.get(nextPathRoot),
-      oldData.get(nextPathRoot), path.slice(1), args);
+      nextOldData, path.slice(1), args);
   }
 
   map.forEach(function(value, key) {
@@ -658,6 +659,7 @@ function hasIn(cursor, path) {
 function onlyOnEvent(eventName, fn) {
   return function (newData, oldData, keyPath) {
     var info = analyze(newData, oldData, keyPath);
+
     if (info.eventName !== eventName) return void 0;
     return fn.apply(fn, info.args);
   };

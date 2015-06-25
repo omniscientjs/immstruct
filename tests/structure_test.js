@@ -1083,6 +1083,62 @@ describe('structure', function () {
         structure.cursor('foo').update(function () { return 'updated'; });
       });
 
+      it('should trigger reference change event when changed through normal cursor', function (done) {
+        var structure = new Structure({
+          data: { foo: 'bar' }
+        });
+
+        var ref = structure.reference(['foo', 'bar']);
+        ref.observe('change', function (newValue) {
+            // this function is not called
+            newValue.toJS().should.eql({'bar': 'qux'});
+            done();
+        });
+        structure.cursor(['foo']).update(function () {
+          return Immutable.fromJS({'bar': 'qux'});
+        });
+      })
+
+      it('should trigger event type specific listeners on uncreated paths', function (done) {
+        var structure = new Structure({
+          data: {  }
+        });
+        var numCalls = 0;
+
+        var ref = structure.reference(['foo', 'bar']);
+        ref.observe('add', function (newValue, keyPath) {
+          numCalls++;
+          keyPath.should.eql(['foo', 'bar']);
+          newValue.toJS().should.eql({'baz': 'qux'});
+        });
+        ref.cursor().update(function () {
+          return Immutable.fromJS({'baz': 'qux'});
+        });
+
+        structure = new Structure({ data: {  } });
+        var ref2 = structure.reference(['foo', 'bar', 'baz']);
+        ref2.observe('add', function (newValue, keyPath) {
+          numCalls++;
+          keyPath.should.eql(['foo', 'bar']);
+          newValue.toJS().should.eql({'baz': 'qux'});
+        });
+        structure.cursor(['foo', 'bar']).update(function () {
+          return Immutable.fromJS({'baz': 'qux'});
+        });
+
+        structure = new Structure({ data: {  } });
+        structure.on('add', function (newValue, keyPath) {
+          numCalls++;
+          keyPath.should.eql(['foo']);
+          newValue.toJS().should.eql({'bar': 'qux'});
+          numCalls.should.equal(3);
+          done();
+        });
+        structure.cursor('foo').update(function () {
+          return Immutable.fromJS({'bar': 'qux'});
+        });
+      });
+
       it('should pass new object relative to reference path on specific event type', function (done) {
         var structure = new Structure({
           data: { 'foo': { 'bar': {} } }
