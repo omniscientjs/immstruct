@@ -74,6 +74,11 @@ var LISTENER_SENTINEL = {};
  *   values: `newValue`, `oldValue` and `path`.
  * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
  * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
+ * * `any`: With the same semantics as `add`, `change` or `delete`, `any` is triggered for
+ *    all types of changes. Differs from swap in the arguments that it is passed.
+ *    Is passed `newValue` (or undefined), `oldValue` (or undefined) and full `keyPath`.
+ *    New and old value are the changed value, not relative/scoped to the reference path as
+ *    with `swap`.
  *
  * ### Options
  *
@@ -280,7 +285,7 @@ Structure.prototype.reference = function reference (path) {
      * but a reference **is not** an EventEmitter it self.
      *
      * The passed `keyPath` for swap events are relative to the reference, but
-     * 
+     *
      *
      * **Note**: As on `swap` for normal immstruct events, the passed arguments for
      * the event is the root, not guaranteed to be the actual changed value.
@@ -338,7 +343,11 @@ Structure.prototype.reference = function reference (path) {
      *   Emits values: `newValue`, `oldValue` and `path`.
      * * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
      * * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
-     *
+     * * `any`: With the same semantics as `add`, `change` or `delete`, `any` is triggered for
+     *    all types of changes. Differs from swap in the arguments that it is passed.
+     *    Is passed `newValue` (or undefined), `oldValue` (or undefined) and full `keyPath`.
+     *    New and old value are the changed value, not relative/scoped to the reference path as
+     *    with `swap`.
      *
      * @param {String} [eventName] - Type of change
      * @param {Function} callback - Callback when referenced data is swapped
@@ -354,7 +363,7 @@ Structure.prototype.reference = function reference (path) {
       }
       if (this._dead || typeof newFn !== 'function') return;
       if (eventName && eventName !== 'swap') {
-        newFn = onlyOnEvent(eventName, newFn);
+        newFn = onEventNameAndAny(eventName, newFn);
       } else {
         newFn = emitScopedReferencedStructures(path, newFn);
       }
@@ -617,6 +626,7 @@ function handlePersisting (emitter, fn) {
 
     if (info.eventName) {
       emitter.emit.apply(emitter, [info.eventName].concat(info.args));
+      emitter.emit('any', info.newObject, info.oldObject, path);
     }
     return newStructure;
   };
@@ -646,7 +656,9 @@ function analyze (newData, oldData, path) {
 
   return {
     eventName: eventName,
-    args: args
+    args: args,
+    newObject: newObject,
+    oldObject: oldObject
   };
 }
 
@@ -657,11 +669,14 @@ function hasIn(cursor, path) {
   return cursor.getIn(path, NOT_SET) !== NOT_SET;
 }
 
-function onlyOnEvent(eventName, fn) {
+function onEventNameAndAny(eventName, fn) {
   return function (newData, oldData, keyPath) {
     var info = analyze(newData, oldData, keyPath);
 
-    if (info.eventName !== eventName) return void 0;
+    if (info.eventName !== eventName && eventName !== 'any') return void 0;
+    if (eventName === 'any') {
+      return fn.call(fn, info.newObject, info.oldObject, keyPath);
+    }
     return fn.apply(fn, info.args);
   };
 }

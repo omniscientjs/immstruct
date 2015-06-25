@@ -178,6 +178,49 @@ describe('structure', function () {
 
     });
 
+    it('should trigger any event on any type of add, delete and change', function (done) {
+      var structure = new Structure({
+        data: { }
+      });
+      var numberOfCalls = 0;
+
+      structure.on('any', function (newData, oldData, keyPath) {
+        numberOfCalls++;
+
+        if (numberOfCalls === 6) {
+          done();
+        }
+      });
+
+      structure.on('add', function (newData, keyPath) {
+        numberOfCalls++;
+        keyPath.should.eql(['foo']);
+        newData.should.eql('baz');
+      });
+      structure.cursor(['foo']).update(function (state) {
+        return 'baz';
+      });
+
+      structure.on('change', function (newData, oldData, keyPath) {
+        numberOfCalls++;
+        keyPath.should.eql(['foo']);
+        newData.should.equal('updated');
+        oldData.should.equal('baz');
+      });
+      structure.cursor('foo').update(function () { return 'updated'; });
+
+      structure.on('delete', function (oldData, keyPath) {
+        numberOfCalls++;
+        keyPath.should.eql(['foo']);
+        oldData.should.eql('updated');
+
+        if (numberOfCalls === 6) {
+          done();
+        }
+      });
+      structure.cursor().remove('foo');
+    });
+
     it('should be able to force trigger swap', function (done) {
       var structure = new Structure();
       structure.on('swap', function () {
@@ -1064,6 +1107,51 @@ describe('structure', function () {
           done();
         });
         ref.cursor().update(function () { return 'updated'; });
+      });
+
+      it('should trigger any event on any type of add, delete and change for references', function (done) {
+        var structure = new Structure({
+          data: { }
+        });
+        var ref = structure.reference('foo');
+
+        var numberOfCalls = 0;
+
+        ref.observe('any', function (newData, oldData, keyPath) {
+          numberOfCalls++;
+
+          if (numberOfCalls === 6) {
+            done();
+          }
+        });
+
+        ref.observe('add', function (newData, keyPath) {
+          numberOfCalls++;
+          keyPath.should.eql(['foo']);
+          newData.should.eql('baz');
+        });
+        ref.cursor().update(function (state) {
+          return 'baz';
+        });
+
+        ref.observe('change', function (newData, oldData, keyPath) {
+          numberOfCalls++;
+          keyPath.should.eql(['foo']);
+          newData.should.equal('updated');
+          oldData.should.equal('baz');
+        });
+        structure.cursor('foo').update(function () { return 'updated'; });
+
+        ref.observe('delete', function (oldData, keyPath) {
+          numberOfCalls++;
+          keyPath.should.eql(['foo']);
+          oldData.should.eql('updated');
+
+          if (numberOfCalls === 6) {
+            done();
+          }
+        });
+        structure.cursor().remove('foo');
       });
 
       it('should trigger only change events when specifying event type', function (done) {

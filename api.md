@@ -233,6 +233,11 @@ structure.cursor(['foo', 'bar']).update(function () {
   values: `newValue`, `oldValue` and `path`.
 * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
+* `any`: With the same semantics as `add`, `change` or `delete`, `any` is triggered for
+   all types of changes. Differs from swap in the arguments that it is passed.
+   Is passed `newValue` (or undefined), `oldValue` (or undefined) and full `keyPath`.
+   New and old value are the changed value, not relative/scoped to the reference path as
+   with `swap`.
 
 ### Options
 
@@ -408,7 +413,11 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
   Emits values: `newValue`, `oldValue` and `path`.
 * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
-
+* `any`: With the same semantics as `add`, `change` or `delete`, `any` is triggered for
+   all types of changes. Differs from swap in the arguments that it is passed.
+   Is passed `newValue` (or undefined), `oldValue` (or undefined) and full `keyPath`.
+   New and old value are the changed value, not relative/scoped to the reference path as
+   with `swap`.
 
 
 ### Parameters

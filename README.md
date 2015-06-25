@@ -193,19 +193,26 @@ See [API Reference](./api.md).
 A Structure object is an event emitter and emits the following events:
 
 * `swap`: Emitted when cursor is updated (new information is set). Is emitted
-  on all types of changes, additions and deletions. The passed structures are
-  always the root structure.
-  One use case for this is to re-render design components. Callback
-  is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
+ on all types of changes, additions and deletions. The passed structures are
+ always the root structure.
+ One use case for this is to re-render design components. Callback
+ is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
 * `next-animation-frame`: Same as `swap`, but only emitted on animation frame.
-  Could use with many render updates and better performance. Callback is passed
-  arguments: `newStructure`, `oldStructure`, `keyPath`.
+ Could use with many render updates and better performance. Callback is passed
+ arguments: `newStructure`, `oldStructure`, `keyPath`.
 * `change`: Emitted when data/value is updated and it existed before. Emits
  values: `newValue`, `oldValue` and `path`.
 * `delete`: Emitted when data/value is removed. Emits value:  `removedValue` and `path`.
 * `add`: Emitted when new data/value is added. Emits value: `newValue` and `path`.
+* `any`: With the same semantics as `add`, `change` or `delete`, `any` is triggered for
+  all types of changes. Differs from swap in the arguments that it is passed.
+  Is passed `newValue` (or undefined), `oldValue` (or undefined) and full `keyPath`.
+  New and old value are the changed value, not relative/scoped to the reference path as
+  with `swap`.
 
-**NOTE:** If you update cursors via `Cursor.update` or `Cursor.set`, and if the underlying Immutable collection is not inherently changed, `swap` and `changed` events will not be emitted, neither will the history (if any) be applied.
+**NOTE:** If you update cursors via `Cursor.update` or `Cursor.set`, and if the
+underlying Immutable collection is not inherently changed, `swap` and `changed`
+events will not be emitted, neither will the history (if any) be applied.
 
 [See tests for event examples](./tests/structure_test.js)
 
