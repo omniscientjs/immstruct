@@ -995,7 +995,7 @@ describe('structure', function () {
 
         var ref = structure.reference('foo');
         ref.observe('swap', function (newData, oldData, keyPath) {
-          keyPath.should.eql(['foo']);
+          keyPath.should.eql([]);
           newData.should.eql('updated');
           oldData.should.eql('bar');
           done();
@@ -1010,7 +1010,7 @@ describe('structure', function () {
 
         var ref = structure.reference('foo');
         ref.observe(function (newData, oldData, keyPath) {
-          keyPath.should.eql(['foo']);
+          keyPath.should.eql([]);
           newData.should.eql('updated');
           oldData.should.eql('bar');
           done();
@@ -1028,7 +1028,7 @@ describe('structure', function () {
         var ref = structure.reference('foo');
         ref.observe(function (newData, oldData, keyPath) {
           numberOfCalls++;
-          keyPath.should.eql(['foo', 'bar']);
+          keyPath.should.eql(['bar']);
           newData.toJS().should.eql({ 'bar': 'updated' });
           oldData.toJS().should.eql({ 'bar': 'hello' });
         });
@@ -1041,7 +1041,7 @@ describe('structure', function () {
         var ref2 = structure.reference('foo');
         ref2.observe(function (newData, oldData, keyPath) {
           numberOfCalls++;
-          keyPath.should.eql(['foo', 'bar']);
+          keyPath.should.eql(['bar']);
           newData.toJS().should.eql({ 'bar': 'updated' });
           oldData.toJS().should.eql({ 'bar': 'hello' });
 
@@ -1051,14 +1051,14 @@ describe('structure', function () {
         ref2.cursor('bar').update(function () { return 'updated'; });
       });
 
-      it('should pass new and old object relative to reference path', function (done) {
+      it('should pass new and old object and keyPath relative to reference path', function (done) {
         var structure = new Structure({
           data: { 'foo': { 'bar': 'hello' } }
         });
 
         var ref = structure.reference(['foo', 'bar']);
         ref.observe(function (newData, oldData, keyPath) {
-          keyPath.should.eql(['foo', 'bar']);
+          keyPath.should.eql([]);
           newData.should.eql('updated');
           oldData.should.eql('hello');
           done();

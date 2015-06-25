@@ -279,12 +279,14 @@ Structure.prototype.reference = function reference (path) {
      * Observe for changes on a reference. On references you can observe for changes,
      * but a reference **is not** an EventEmitter it self.
      *
-     * The passed `keyPath` to the listeners is always the full path to the actual change.
-     * See examples below.
+     * The passed `keyPath` for swap events are relative to the reference, but
+     * 
      *
      * **Note**: As on `swap` for normal immstruct events, the passed arguments for
      * the event is the root, not guaranteed to be the actual changed value.
      * The structure is how ever scoped to the path passed in to the reference.
+     * All values passed to the eventlistener for the swap event are relative
+     * to the path used as key path to the reference.
      *
      * For instance:
      *
@@ -292,7 +294,7 @@ Structure.prototype.reference = function reference (path) {
      * var structure = immstruct({ 'foo': { 'bar': 'hello' } });
      * var ref = structure.reference('foo');
      * ref.observe(function (newData, oldData, keyPath) {
-     *   keyPath.should.eql(['foo', 'bar']);
+     *   keyPath.should.eql(['bar']);
      *   newData.toJS().should.eql({ 'bar': 'updated' });
      *   oldData.toJS().should.eql({ 'bar': 'hello' });
      * });
@@ -300,7 +302,7 @@ Structure.prototype.reference = function reference (path) {
      * ```
      *
      * For type specific events, how ever, the actual changed value is passed,
-     * not the root data.
+     * not the root data. In these cases, the full keyPath to the change is passed.
      *
      * For instance:
      *
@@ -328,9 +330,9 @@ Structure.prototype.reference = function reference (path) {
      *
      * ### Events
      * * `swap`: Emitted when any cursor is updated (new information is set).
-     *   Triggered in any change, both change, add and delete. One use case for
-     *   this is to re-render design components. Structures passed as arguments
-     *   are scoped to the path passed to the reference.
+     *   Triggered in any data swap is made on the structure. One use case for
+     *   this is to re-render design components. Data passed as arguments
+     *   are scoped/relative to the path passed to the reference, this also goes for keyPath.
      *   Callback is passed arguments: `newStructure`, `oldStructure`, `keyPath`.
      * * `change`: Emitted when data/value is updated and it existed before.
      *   Emits values: `newValue`, `oldValue` and `path`.
@@ -666,7 +668,7 @@ function onlyOnEvent(eventName, fn) {
 
 function emitScopedReferencedStructures(path, fn) {
   return function withReferenceScopedStructures (newStructure, oldStructure, keyPath) {
-    return fn.call(this, newStructure.getIn(path), oldStructure.getIn(path), keyPath);
+    return fn.call(this, newStructure.getIn(path), oldStructure.getIn(path), keyPath.slice(path.length));
   };
 }
 
