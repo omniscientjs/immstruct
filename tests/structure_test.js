@@ -823,12 +823,8 @@ describe('structure', function () {
 
       var ref = structure.reference(['foo', 'value']);
       ref.observe(function () {
-        if (i++ === 0) {
-          expect(ref.cursor().deref()).to.be.not.ok();
-        } else {
-          ref.cursor().deref().should.eql(10);
-          done();
-        }
+        ref.cursor().deref().should.eql(10);
+        done();
       });
 
       structure.cursor().update(function() {
