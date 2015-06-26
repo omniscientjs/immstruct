@@ -130,14 +130,9 @@ function Structure (options) {
 
   this._referencelisteners = Immutable.Map();
   this.on('swap', function (newData, oldData, keyPath) {
-    var path, args = [newData, oldData, keyPath];
-    if (!keyPath || keyPath.length === 0) {
-      return emit(self._referencelisteners, newData, oldData, [], args);
-    }
-
-    path = keyPath[0];
-    emit(self._referencelisteners.get(path), newData.get(path), oldData.get(path),
-      keyPath.slice(1), args);
+    keyPath = keyPath || [];
+    var args = [newData, oldData, keyPath];
+    emit(self._referencelisteners, newData, oldData, keyPath, args);
   });
 
   EventEmitter.call(this, arguments);
