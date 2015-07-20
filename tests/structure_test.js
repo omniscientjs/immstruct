@@ -993,6 +993,16 @@ describe('structure', function () {
         structure.cursor('foo').update(function () { return 'updated'; });
       });
 
+      it('should trigger change listener for reference when changing cursor from outside on root', function (done) {
+        var structure = new Structure({
+          data: { 'foo': 'bar' }
+        });
+
+        var ref = structure.reference();
+        ref.observe(function () { done(); });
+        structure.cursor('foo').update(function () { return 'updated'; });
+      });
+
       it('should trigger change listener for reference created from a reference', function (done) {
         var structure = new Structure({
           data: {
