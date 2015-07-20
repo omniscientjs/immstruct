@@ -5,9 +5,6 @@ A wrapper for [Immutable.js](https://github.com/facebook/immutable-js/tree/maste
 are updated. Handy for use with immutable pure components for views,
 like with [Omniscient](https://github.com/omniscientjs/omniscient) or [React.js](https://github.com/facebook/react).
 
-*This documentation is for the current unreleased `v2.0.0`. See the
-[`v1.4.1` docs in the git history](https://github.com/omniscientjs/immstruct/blob/f6a56973f2b7b701217ac152dd49691f7ec234af/README.md)*
-
 See the [API References](./api.md) for more documentation and usage.
 
 ## Usage
