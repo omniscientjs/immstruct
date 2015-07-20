@@ -6,10 +6,11 @@ var Structure = require('./src/structure');
  * of Structure instances.
  *
  * ### Examples:
- *
- *     var ImmstructInstance = require('immstruct').Immstruct;
- *     var immstruct = new ImmstructInstance();
- *     var structure = immstruct.get({ data: });
+ * ```js
+ * var ImmstructInstance = require('immstruct').Immstruct;
+ * var immstruct = new ImmstructInstance();
+ * var structure = immstruct.get({ data: });
+ * ```
  *
  * @property {Array} instances Array of `Structure` instances.
  *
@@ -71,10 +72,10 @@ Immstruct.prototype.instance = function (name) {
  * instance. You would do this to start from scratch, freeing up memory.
  *
  * ### Examples:
- *
- *     var immstruct = require('immstruct');
- *     immstruct.clear();
- *
+ * ```js
+ * var immstruct = require('immstruct');
+ * immstruct.clear();
+ * ```
  * @module immstruct.clear
  * @api public
  */
@@ -87,11 +88,11 @@ Immstruct.prototype.clear = function () {
  * Provided by key
  *
  * ### Examples:
- *
- *     var immstruct = require('immstruct');
- *     immstruct('myKey', { foo: 'hello' });
- *     immstruct.remove('myKey');
- *
+ * ```js
+ * var immstruct = require('immstruct');
+ * immstruct('myKey', { foo: 'hello' });
+ * immstruct.remove('myKey');
+ * ```
  * @param {String} key
  *
  * @module immstruct.remove
@@ -116,12 +117,13 @@ Immstruct.prototype.remove = function (key) {
  * Setting to 0 is the as not having history enabled in the first place.
  *
  * ### Examples:
- *
- *     var immstruct = require('immstruct');
- *     var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
- *     var structure = immstruct.withHistory(10, { foo: 'Hello' });
- *     var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
- *     var structure = immstruct.withHistory({ foo: 'Hello' });
+ * ```js
+ * var immstruct = require('immstruct');
+ * var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
+ * var structure = immstruct.withHistory(10, { foo: 'Hello' });
+ * var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
+ * var structure = immstruct.withHistory({ foo: 'Hello' });
+ * ```
  *
  * @param {String} [key] - defaults to random string
  * @param {Number} [limit] - defaults to Infinity
@@ -154,12 +156,13 @@ var inst = new Immstruct();
  * is provided, a random key will be generated.
  *
  * ### Examples:
- *
- *     var immstruct = require('immstruct');
- *     var structure = immstruct('myStruct', { foo: 'Hello' });
- *     var structure2 = immstruct.withHistory({ bar: 'Bye' });
- *     immstruct.remove('myStruct');
- *     // ...
+ * ```js
+ * var immstruct = require('immstruct');
+ * var structure = immstruct('myStruct', { foo: 'Hello' });
+ * var structure2 = immstruct.withHistory({ bar: 'Bye' });
+ * immstruct.remove('myStruct');
+ * // ...
+ * ```
  *
  * @param {String} [key] - defaults to random string
  * @param {Object|Immutable} [data] - defaults to empty data

@@ -53,12 +53,13 @@ var LISTENER_SENTINEL = {};
  *  change happened**
  *
  * ### Examples:
+ * ```js
+ * var Structure = require('immstruct/structure');
+ * var s = new Structure({ data: { foo: 'bar' }});
  *
- *     var Structure = require('immstruct/structure');
- *     var s = new Structure({ data: { foo: 'bar' }});
- *
- *     // Or:
- *     // var Structure = require('immstruct').Structure;
+ * // Or:
+ * // var Structure = require('immstruct').Structure;
+ * ```
  *
  * ### Events
  *
@@ -82,7 +83,7 @@ var LISTENER_SENTINEL = {};
  *
  * ### Options
  *
- * ```
+ * ```json
  * {
  *   key: String, // Defaults to random string
  *   data: Object|Immutable, // defaults to empty Map
@@ -170,12 +171,13 @@ function emit(map, newData, oldData, path, args) {
  * See the Immutable.js docs for more info on how to use cursors.**
  *
  * ### Examples:
- *
- *     var Structure = require('immstruct/structure');
- *     var s = new Structure({ data: { foo: 'bar', a: { b: 'foo' } }});
- *     s.cursor().set('foo', 'hello');
- *     s.cursor('foo').update(function () { return 'Changed'; });
- *     s.cursor(['a', 'b']).update(function () { return 'bar'; });
+ * ```js
+ * var Structure = require('immstruct/structure');
+ * var s = new Structure({ data: { foo: 'bar', a: { b: 'foo' } }});
+ * s.cursor().set('foo', 'hello');
+ * s.cursor('foo').update(function () { return 'Changed'; });
+ * s.cursor(['a', 'b']).update(function () { return 'bar'; });
+ * ```
  *
  * See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/master/tests/structure_test.js)
  *
@@ -223,25 +225,26 @@ Structure.prototype.cursor = function (path) {
  * References also allow you to listen for changes specific for a path.
  *
  * ### Examples:
+ * ```js
+ * var structure = immstruct({
+ *   someBox: { message: 'Hello World!' }
+ * });
+ * var ref = structure.reference(['someBox']);
  *
- *     var structure = immstruct({
- *       someBox: { message: 'Hello World!' }
- *     });
- *     var ref = structure.reference(['someBox']);
+ * var unobserve = ref.observe(function () {
+ *   // Called when data the path 'someBox' is changed.
+ *   // Also called when the data at ['someBox', 'message'] is changed.
+ * });
  *
- *     var unobserve = ref.observe(function () {
- *       // Called when data the path 'someBox' is changed.
- *       // Also called when the data at ['someBox', 'message'] is changed.
- *     });
+ * // Update the data using the ref
+ * ref.cursor().update(function () { return 'updated'; });
  *
- *     // Update the data using the ref
- *     ref.cursor().update(function () { return 'updated'; });
+ * // Update the data using the initial structure
+ * structure.cursor(['someBox', 'message']).update(function () { return 'updated again'; });
  *
- *     // Update the data using the initial structure
- *     structure.cursor(['someBox', 'message']).update(function () { return 'updated again'; });
- *
- *     // Remove the listener
- *     unobserve();
+ * // Remove the listener
+ * unobserve();
+ * ```
  *
  * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
  *
@@ -319,12 +322,13 @@ Structure.prototype.reference = function reference (path) {
      *
      *
      * ### Examples:
+     * ```js
+     * var ref = structure.reference(['someBox']);
      *
-     *     var ref = structure.reference(['someBox']);
-     *
-     *     var unobserve = ref.observe('delete', function () {
-     *       // Called when data the path 'someBox' is removed from the structure.
-     *     });
+     * var unobserve = ref.observe('delete', function () {
+     *   // Called when data the path 'someBox' is removed from the structure.
+     * });
+     * ```
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
@@ -378,10 +382,11 @@ Structure.prototype.reference = function reference (path) {
      * in a deeper level.
      *
      * ### Examples:
-     *
-     *     var ref = structure.reference(['someBox']);
-     *     var cursor = ref.cursor('someSubPath');
-     *     var cursor2 = ref.cursor();
+     * ```js
+     * var ref = structure.reference(['someBox']);
+     * var cursor = ref.cursor('someSubPath');
+     * var cursor2 = ref.cursor();
+     * ```
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
@@ -402,13 +407,14 @@ Structure.prototype.reference = function reference (path) {
      * Creates a reference on a lower level path. See creating normal references.
      *
      * ### Examples:
+     * ```js
+     * var structure = immstruct({
+     *   someBox: { message: 'Hello World!' }
+     * });
+     * var ref = structure.reference('someBox');
      *
-     *     var structure = immstruct({
-     *       someBox: { message: 'Hello World!' }
-     *     });
-     *     var ref = structure.reference('someBox');
-     *
-     *     var newReference = ref.reference('message');
+     * var newReference = ref.reference('message');
+     * ```
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *

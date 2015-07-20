@@ -5,10 +5,11 @@ Creates a new instance of Immstruct, having it's own list
 of Structure instances.
 
 ### Examples:
-
-    var ImmstructInstance = require('immstruct').Immstruct;
-    var immstruct = new ImmstructInstance();
-    var structure = immstruct.get({ data: });
+```js
+var ImmstructInstance = require('immstruct').Immstruct;
+var immstruct = new ImmstructInstance();
+var structure = immstruct.get({ data: });
+```
 
 
 ### Properties
@@ -68,10 +69,10 @@ Clear the entire list of `Structure` instances from the Immstruct
 instance. You would do this to start from scratch, freeing up memory.
 
 ### Examples:
-
-    var immstruct = require('immstruct');
-    immstruct.clear();
-
+```js
+var immstruct = require('immstruct');
+immstruct.clear();
+```
 
 
 ### `immstruct.remove(key)`
@@ -80,11 +81,11 @@ Remove one `Structure` instance from the Immstruct instances list.
 Provided by key
 
 ### Examples:
-
-    var immstruct = require('immstruct');
-    immstruct('myKey', { foo: 'hello' });
-    immstruct.remove('myKey');
-
+```js
+var immstruct = require('immstruct');
+immstruct('myKey', { foo: 'hello' });
+immstruct.remove('myKey');
+```
 
 ### Parameters
 
@@ -111,12 +112,13 @@ shifts off the oldest record. The default if omitted is Infinity.
 Setting to 0 is the as not having history enabled in the first place.
 
 ### Examples:
-
-    var immstruct = require('immstruct');
-    var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
-    var structure = immstruct.withHistory(10, { foo: 'Hello' });
-    var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
-    var structure = immstruct.withHistory({ foo: 'Hello' });
+```js
+var immstruct = require('immstruct');
+var structure = immstruct.withHistory('myStruct', 10, { foo: 'Hello' });
+var structure = immstruct.withHistory(10, { foo: 'Hello' });
+var structure = immstruct.withHistory('myStruct', { foo: 'Hello' });
+var structure = immstruct.withHistory({ foo: 'Hello' });
+```
 
 
 ### Parameters
@@ -145,12 +147,13 @@ key to be able to retrieve it from list of instances. If no key
 is provided, a random key will be generated.
 
 ### Examples:
-
-    var immstruct = require('immstruct');
-    var structure = immstruct('myStruct', { foo: 'Hello' });
-    var structure2 = immstruct.withHistory({ bar: 'Bye' });
-    immstruct.remove('myStruct');
-    // ...
+```js
+var immstruct = require('immstruct');
+var structure = immstruct('myStruct', { foo: 'Hello' });
+var structure2 = immstruct.withHistory({ bar: 'Bye' });
+immstruct.remove('myStruct');
+// ...
+```
 
 
 ### Parameters
@@ -212,12 +215,13 @@ structure.cursor(['foo', 'bar']).update(function () {
  change happened**
 
 ### Examples:
+```js
+var Structure = require('immstruct/structure');
+var s = new Structure({ data: { foo: 'bar' }});
 
-    var Structure = require('immstruct/structure');
-    var s = new Structure({ data: { foo: 'bar' }});
-
-    // Or:
-    // var Structure = require('immstruct').Structure;
+// Or:
+// var Structure = require('immstruct').Structure;
+```
 
 ### Events
 
@@ -241,7 +245,7 @@ structure.cursor(['foo', 'bar']).update(function () {
 
 ### Options
 
-```
+```json
 {
   key: String, // Defaults to random string
   data: Object|Immutable, // defaults to empty Map
@@ -283,12 +287,13 @@ Changes made through created cursor will cause a `swap` event to happen (see `Ev
 See the Immutable.js docs for more info on how to use cursors.**
 
 ### Examples:
-
-    var Structure = require('immstruct/structure');
-    var s = new Structure({ data: { foo: 'bar', a: { b: 'foo' } }});
-    s.cursor().set('foo', 'hello');
-    s.cursor('foo').update(function () { return 'Changed'; });
-    s.cursor(['a', 'b']).update(function () { return 'bar'; });
+```js
+var Structure = require('immstruct/structure');
+var s = new Structure({ data: { foo: 'bar', a: { b: 'foo' } }});
+s.cursor().set('foo', 'hello');
+s.cursor('foo').update(function () { return 'Changed'; });
+s.cursor(['a', 'b']).update(function () { return 'bar'; });
+```
 
 See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/master/tests/structure_test.js)
 
@@ -314,25 +319,26 @@ for better understanding the concept.
 References also allow you to listen for changes specific for a path.
 
 ### Examples:
+```js
+var structure = immstruct({
+  someBox: { message: 'Hello World!' }
+});
+var ref = structure.reference(['someBox']);
 
-    var structure = immstruct({
-      someBox: { message: 'Hello World!' }
-    });
-    var ref = structure.reference(['someBox']);
+var unobserve = ref.observe(function () {
+  // Called when data the path 'someBox' is changed.
+  // Also called when the data at ['someBox', 'message'] is changed.
+});
 
-    var unobserve = ref.observe(function () {
-      // Called when data the path 'someBox' is changed.
-      // Also called when the data at ['someBox', 'message'] is changed.
-    });
+// Update the data using the ref
+ref.cursor().update(function () { return 'updated'; });
 
-    // Update the data using the ref
-    ref.cursor().update(function () { return 'updated'; });
+// Update the data using the initial structure
+structure.cursor(['someBox', 'message']).update(function () { return 'updated again'; });
 
-    // Update the data using the initial structure
-    structure.cursor(['someBox', 'message']).update(function () { return 'updated again'; });
-
-    // Remove the listener
-    unobserve();
+// Remove the listener
+unobserve();
+```
 
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
@@ -394,12 +400,13 @@ ref.cursor().update(['bar'], function () { return 'updated'; });
 
 
 ### Examples:
+```js
+var ref = structure.reference(['someBox']);
 
-    var ref = structure.reference(['someBox']);
-
-    var unobserve = ref.observe('delete', function () {
-      // Called when data the path 'someBox' is removed from the structure.
-    });
+var unobserve = ref.observe('delete', function () {
+  // Called when data the path 'someBox' is removed from the structure.
+});
+```
 
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
@@ -440,10 +447,11 @@ cursor method. You can also provide a sub-path to create a reference
 in a deeper level.
 
 ### Examples:
-
-    var ref = structure.reference(['someBox']);
-    var cursor = ref.cursor('someSubPath');
-    var cursor2 = ref.cursor();
+```js
+var ref = structure.reference(['someBox']);
+var cursor = ref.cursor('someSubPath');
+var cursor2 = ref.cursor();
+```
 
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
@@ -464,13 +472,14 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 Creates a reference on a lower level path. See creating normal references.
 
 ### Examples:
+```js
+var structure = immstruct({
+  someBox: { message: 'Hello World!' }
+});
+var ref = structure.reference('someBox');
 
-    var structure = immstruct({
-      someBox: { message: 'Hello World!' }
-    });
-    var ref = structure.reference('someBox');
-
-    var newReference = ref.reference('message');
+var newReference = ref.reference('message');
+```
 
 See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
