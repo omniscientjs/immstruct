@@ -34,7 +34,7 @@ function generateHeader() {
 
   header = '/**\n';
   header += '* immstruct v' + pack.version + '\n';
-  header += '* Authors: ' + pack.author + '\n';
+  header += '* A part of the Omniscient.js project\n';
   header += '***************************************/\n';
 
   return header;
