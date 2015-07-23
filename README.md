@@ -9,8 +9,10 @@ See the [API References](./api.md) for more documentation and usage.
 
 ## Usage
 
+### `someFile.js`
 ```js
-// someFile.js
+
+// Require a default instance of immstruct (singleton instance)
 var immstruct = require('immstruct');
 
 // Create structure under the later retrievable ID `myKey`
@@ -44,8 +46,9 @@ console.log(newCursor.deref()); //=> 2
 **Note:** *The cursors you see here are cursors from Facebooks Immutable.js library. Read the
 complete API in [their repo](https://github.com/facebook/immutable-js/blob/master/contrib/cursor/index.d.ts).*
 
+### `anotherFile.js`
 ```js
-// anotherFile.js
+// Require a default instance of immstruct (singleton instance)
 var immstruct = require('immstruct');
 
 // Get the structure we previously defined under the ID `myKey`
