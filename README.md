@@ -12,6 +12,8 @@ See the [API References](./api.md) for more documentation and usage.
 ```js
 // someFile.js
 var immstruct = require('immstruct');
+
+// Create structure under the later retrievable ID `myKey`
 var structure = immstruct('myKey', { a: { b: { c: 1 } } });
 
 // Use event `swap` or `next-animation-frame`
@@ -45,6 +47,8 @@ complete API in [their repo](https://github.com/facebook/immutable-js/blob/maste
 ```js
 // anotherFile.js
 var immstruct = require('immstruct');
+
+// Get the structure we previously defined under the ID `myKey`
 var structure = immstruct('myKey');
 
 var cursor = structure.cursor(['a', 'b', 'c']);
