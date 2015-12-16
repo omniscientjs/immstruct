@@ -21,7 +21,7 @@ var LISTENER_SENTINEL = {};
  *
  * For instance:
  * ```js
- * var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+ * var structure = new Structure({ 'data': { 'foo': { 'bar': 'hello' } } });
  *
  * structure.on('swap', function (newData, oldData, keyPath) {
  *   keyPath.should.eql(['foo', 'bar']);
@@ -36,7 +36,7 @@ var LISTENER_SENTINEL = {};
  *
  * But for `change`
  * ```js
- * var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+ * var structure = new Structure({ 'data': { 'foo': { 'bar': 'hello' } } });
  *
  * structure.on('change', function (newData, oldData, keyPath) {
  *   keyPath.should.eql(['foo', 'bar']);
@@ -85,19 +85,19 @@ var LISTENER_SENTINEL = {};
  *
  * ```json
  * {
- *   key: String, // Defaults to random string
+ *   key: string, // Defaults to random string
  *   data: Object|Immutable, // defaults to empty Map
- *   history: Boolean, // Defaults to false
- *   historyLimit: Number, // If history enabled, Defaults to Infinity
+ *   history: boolean, // Defaults to false
+ *   historyLimit: number, // If history enabled, Defaults to Infinity
  * }
  * ```
  *
  * @property {Immutable.List} history `Immutable.List` with history.
  * @property {Object|Immutable} current Provided data as immutable data
- * @property {String} key Generated or provided key.
+ * @property {string} key Generated or provided key.
  *
  *
- * @param {{ key: String, data: Object, history: Boolean }} [options] - defaults
+ * @param {{ key: string, data: Object, history: boolean }} [options] - defaults
  *  to random key and empty data (immutable structure). No history
  *
  * @constructor
@@ -181,7 +181,7 @@ function emit(map, newData, oldData, path, args) {
  *
  * See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/master/tests/structure_test.js)
  *
- * @param {String|Array} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
+ * @param {string|Array.<string>} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
  *
  * @api public
  * @module structure.cursor
@@ -248,7 +248,7 @@ Structure.prototype.cursor = function (path) {
  *
  * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
  *
- * @param {String|Array|Cursor} [path|cursor] - defaults to empty string. Can be
+ * @param {string|Array.<string>|Cursor} [path|cursor] - defaults to empty string. Can be
  * array for path or use path of cursor. See Immutable.js Cursors
  *
  * @api public
@@ -348,7 +348,7 @@ Structure.prototype.reference = function reference (path) {
      *    New and old value are the changed value, not relative/scoped to the reference path as
      *    with `swap`.
      *
-     * @param {String} [eventName] - Type of change
+     * @param {string} [eventName] - Type of change
      * @param {Function} callback - Callback when referenced data is swapped
      *
      * @api public
@@ -390,7 +390,7 @@ Structure.prototype.reference = function reference (path) {
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
-     * @param {String} [subpath] - Subpath to a deeper structure
+     * @param {string} [subpath] - Subpath to a deeper structure
      *
      * @api public
      * @module reference.cursor
@@ -418,7 +418,7 @@ Structure.prototype.reference = function reference (path) {
      *
      * See more examples in the [readme](https://github.com/omniscientjs/immstruct)
      *
-     * @param {String|Array} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
+     * @param {string|Array.<string>} [path] - defaults to empty string. Can be array for path. See Immutable.js Cursors
      *
      * @api public
      * @see structure.reference
@@ -479,7 +479,7 @@ Structure.prototype.reference = function reference (path) {
  *
  * @param {Object} newData - Immutable object for the new data to emit
  * @param {Object} oldData - Immutable object for the old data to emit
- * @param {String} keyPath - Structure path (in tree) to where the changes occured.
+ * @param {string} keyPath - Structure path (in tree) to where the changes occured.
  *
  * @api public
  * @module structure.forceHasSwapped
@@ -499,7 +499,7 @@ Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
  *
  * Define number of steps to undo in param.
  *
- * @param {Number} steps - Number of steps to undo
+ * @param {number} steps - Number of steps to undo
  *
  * @api public
  * @module structure.undo
@@ -520,7 +520,7 @@ Structure.prototype.undo = function(steps) {
  * Define number of steps to redo in param.
  * **Will NOT emit swap when redo. You have to do this yourself**.
  *
- * @param {Number} head - Number of steps to head to in redo
+ * @param {number} head - Number of steps to head to in redo
  *
  * @api public
  * @module structure.redo

@@ -14,9 +14,9 @@ var structure = immstruct.get({ data: });
 
 ### Properties
 
-| property    | type  | description                      |
-| ----------- | ----- | -------------------------------- |
-| `instances` | Array | Array of `Structure` instances.  |
+| property    | type              | description                      |
+| ----------- | ----------------- | -------------------------------- |
+| `instances` | Array.<Structure> | Array of `Structure` instances.  |
 
 
 
@@ -39,7 +39,7 @@ var structure = immstruct.get('myStruct', { foo: 'Hello' });
 
 | param    | type             | description                             |
 | -------- | ---------------- | --------------------------------------- |
-| `[key]`  | String           | _optional:_ - defaults to random string |
+| `[key]`  | string           | _optional:_ - defaults to random string |
 | `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
@@ -47,7 +47,7 @@ var structure = immstruct.get('myStruct', { foo: 'Hello' });
 **Returns** `Structure`, 
 
 
-### `immstruct.getInstances([name])`
+### `immstruct.instance([name])`
 
 Get list of all instances created.
 
@@ -56,11 +56,11 @@ Get list of all instances created.
 
 | param    | type   | description                                                                |
 | -------- | ------ | -------------------------------------------------------------------------- |
-| `[name]` | String | _optional:_ - Name of the instance to get. If undefined get all instances  |
+| `[name]` | string | _optional:_ - Name of the instance to get. If undefined get all instances  |
 
 
 
-**Returns** `Array`, 
+**Returns** `Structure,Object.<String, Structure>`, 
 
 
 ### `immstruct.clear`
@@ -91,11 +91,11 @@ immstruct.remove('myKey');
 
 | param | type   | description |
 | ----- | ------ | ----------- |
-| `key` | String |             |
+| `key` | string |             |
 
 
 
-**Returns** `Boolean`, 
+**Returns** `boolean`, 
 
 
 ### `immstruct.withHistory([key], [limit], [data])`
@@ -125,8 +125,8 @@ var structure = immstruct.withHistory({ foo: 'Hello' });
 
 | param     | type             | description                             |
 | --------- | ---------------- | --------------------------------------- |
-| `[key]`   | String           | _optional:_ - defaults to random string |
-| `[limit]` | Number           | _optional:_ - defaults to Infinity      |
+| `[key]`   | string           | _optional:_ - defaults to random string |
+| `[limit]` | number           | _optional:_ - defaults to Infinity      |
 | `[data]`  | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
@@ -160,7 +160,7 @@ immstruct.remove('myStruct');
 
 | param    | type             | description                             |
 | -------- | ---------------- | --------------------------------------- |
-| `[key]`  | String           | _optional:_ - defaults to random string |
+| `[key]`  | string           | _optional:_ - defaults to random string |
 | `[data]` | Object,Immutable | _optional:_ - defaults to empty data    |
 
 
@@ -183,7 +183,7 @@ actual changed value is passed.
 
 For instance:
 ```js
-var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+var structure = new Structure({ 'data': { 'foo': { 'bar': 'hello' } } });
 
 structure.on('swap', function (newData, oldData, keyPath) {
   keyPath.should.eql(['foo', 'bar']);
@@ -198,7 +198,7 @@ structure.cursor(['foo', 'bar']).update(function () {
 
 But for `change`
 ```js
-var structure = new Structure({ 'foo': { 'bar': 'hello' } });
+var structure = new Structure({ 'data': { 'foo': { 'bar': 'hello' } } });
 
 structure.on('change', function (newData, oldData, keyPath) {
   keyPath.should.eql(['foo', 'bar']);
@@ -247,10 +247,10 @@ var s = new Structure({ data: { foo: 'bar' }});
 
 ```json
 {
-  key: String, // Defaults to random string
+  key: string, // Defaults to random string
   data: Object|Immutable, // defaults to empty Map
-  history: Boolean, // Defaults to false
-  historyLimit: Number, // If history enabled, Defaults to Infinity
+  history: boolean, // Defaults to false
+  historyLimit: number, // If history enabled, Defaults to Infinity
 }
 ```
 
@@ -259,7 +259,7 @@ var s = new Structure({ data: { foo: 'bar' }});
 
 | param       | type                                                                                   | description                                                                             |
 | ----------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `[options]` | { key: <code>String</code>, data: <code>Object</code>, history: <code>Boolean</code> } | _optional:_ - defaults  to random key and empty data (immutable structure). No history
+| `[options]` | { key: <code>string</code>, data: <code>Object</code>, history: <code>boolean</code> } | _optional:_ - defaults  to random key and empty data (immutable structure). No history
  |
 
 
@@ -269,7 +269,7 @@ var s = new Structure({ data: { foo: 'bar' }});
 | --------- | ---------------- | ------------------------------- |
 | `history` | Immutable.List   | `Immutable.List` with history.  |
 | `current` | Object,Immutable | Provided data as immutable data |
-| `key`     | String           | Generated or provided key. 
+| `key`     | string           | Generated or provided key. 
     |
 
 
@@ -300,9 +300,9 @@ See more examples in the [tests](https://github.com/omniscientjs/immstruct/blob/
 
 ### Parameters
 
-| param    | type         | description                                                                              |
-| -------- | ------------ | ---------------------------------------------------------------------------------------- |
-| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+| param    | type                  | description                                                                              |
+| -------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `[path]` | string,Array.<string> | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
 
 
 
@@ -345,9 +345,9 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Parameters
 
-| param           | type                | description                                                                                                    |
-| --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `[path|cursor]` | String,Array,Cursor | _optional:_ - defaults to empty string. Can be array for path or use path of cursor. See Immutable.js Cursors
+| param           | type                         | description                                                                                                    |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `[path|cursor]` | string,Array.<string>,Cursor | _optional:_ - defaults to empty string. Can be array for path or use path of cursor. See Immutable.js Cursors
  |
 
 
@@ -431,7 +431,7 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 | param         | type     | description                                 |
 | ------------- | -------- | ------------------------------------------- |
-| `[eventName]` | String   | _optional:_ - Type of change                |
+| `[eventName]` | string   | _optional:_ - Type of change                |
 | `callback`    | Function | - Callback when referenced data is swapped  |
 
 
@@ -460,7 +460,7 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 | param       | type   | description                                  |
 | ----------- | ------ | -------------------------------------------- |
-| `[subpath]` | String | _optional:_ - Subpath to a deeper structure  |
+| `[subpath]` | string | _optional:_ - Subpath to a deeper structure  |
 
 
 
@@ -486,9 +486,9 @@ See more examples in the [readme](https://github.com/omniscientjs/immstruct)
 
 ### Parameters
 
-| param    | type         | description                                                                              |
-| -------- | ------------ | ---------------------------------------------------------------------------------------- |
-| `[path]` | String,Array | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
+| param    | type                  | description                                                                              |
+| -------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `[path]` | string,Array.<string> | _optional:_ - defaults to empty string. Can be array for path. See Immutable.js Cursors  |
 
 
 
@@ -526,7 +526,7 @@ If newData is `null` current will be used.
 | --------- | ------ | --------------------------------------------------------- |
 | `newData` | Object | - Immutable object for the new data to emit               |
 | `oldData` | Object | - Immutable object for the old data to emit               |
-| `keyPath` | String | - Structure path (in tree) to where the changes occured.  |
+| `keyPath` | string | - Structure path (in tree) to where the changes occured.  |
 
 
 
@@ -547,7 +547,7 @@ Define number of steps to undo in param.
 
 | param   | type   | description                |
 | ------- | ------ | -------------------------- |
-| `steps` | Number | - Number of steps to undo  |
+| `steps` | number | - Number of steps to undo  |
 
 
 
@@ -565,7 +565,7 @@ Define number of steps to redo in param.
 
 | param  | type   | description                           |
 | ------ | ------ | ------------------------------------- |
-| `head` | Number | - Number of steps to head to in redo  |
+| `head` | number | - Number of steps to head to in redo  |
 
 
 
