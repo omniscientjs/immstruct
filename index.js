@@ -12,7 +12,7 @@ var Structure = require('./src/structure');
  * var structure = immstruct.get({ data: });
  * ```
  *
- * @property {Array} instances Array of `Structure` instances.
+ * @property {Array.<Structure>} instances Array of `Structure` instances.
  *
  * @class {Immstruct}
  * @constructor
@@ -38,7 +38,7 @@ function Immstruct () {
  * var immstruct = require('immstruct');
  * var structure = immstruct.get('myStruct', { foo: 'Hello' });
  * ```
- * @param {String} [key] - defaults to random string
+ * @param {string} [key] - defaults to random string
  * @param {Object|Immutable} [data] - defaults to empty data
  *
  * @returns {Structure}
@@ -56,10 +56,10 @@ Immstruct.prototype.get = function (key, data) {
  *
  * Get list of all instances created.
  *
- * @param {String} [name] - Name of the instance to get. If undefined get all instances
+ * @param {string} [name] - Name of the instance to get. If undefined get all instances
  *
- * @returns {Array}
- * @module immstruct.getInstances
+ * @returns {(Structure|Object.<String, Structure>)}
+ * @module immstruct.instance
  * @api public
  */
 Immstruct.prototype.instance = function (name) {
@@ -93,11 +93,11 @@ Immstruct.prototype.clear = function () {
  * immstruct('myKey', { foo: 'hello' });
  * immstruct.remove('myKey');
  * ```
- * @param {String} key
+ * @param {string} key
  *
  * @module immstruct.remove
  * @api public
- * @returns {Boolean}
+ * @returns {boolean}
  */
 Immstruct.prototype.remove = function (key) {
   return delete this._instances[key];
@@ -125,8 +125,8 @@ Immstruct.prototype.remove = function (key) {
  * var structure = immstruct.withHistory({ foo: 'Hello' });
  * ```
  *
- * @param {String} [key] - defaults to random string
- * @param {Number} [limit] - defaults to Infinity
+ * @param {string} [key] - defaults to random string
+ * @param {number} [limit] - defaults to Infinity
  * @param {Object|Immutable} [data] - defaults to empty data
  *
  * @module immstruct.withHistory
@@ -164,7 +164,7 @@ var inst = new Immstruct();
  * // ...
  * ```
  *
- * @param {String} [key] - defaults to random string
+ * @param {string} [key] - defaults to random string
  * @param {Object|Immutable} [data] - defaults to empty data
  *
  * @api public
