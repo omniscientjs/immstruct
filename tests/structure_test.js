@@ -259,15 +259,15 @@ describe('structure', function () {
         switch(i) {
           case 0:
             oldValue.should.equal(true);
-            expect(newValue).to.be.undefined();
+            expect(newValue).to.be.undefined;
           break;
           case 1:
-            expect(oldValue).to.be.undefined();
-            expect(newValue).to.be.false();
+            expect(oldValue).to.be.undefined;
+            expect(newValue).to.be.false;
           break;
           case 2:
-            expect(oldValue).to.be.false();
-            expect(newValue).to.be.null();
+            expect(oldValue).to.be.false;
+            expect(newValue).to.be.null;
             done();
           break;
         }
@@ -318,13 +318,13 @@ describe('structure', function () {
         path.should.eql([i+'']);
         switch(i) {
           case 1:
-            expect(newValue).to.be.false();
+            expect(newValue).to.be.false;
           break;
           case 2:
-            expect(newValue).to.be.null();
+            expect(newValue).to.be.null;
           break;
           case 3:
-            expect(newValue).to.be.undefined();
+            expect(newValue).to.be.undefined;
             done();
           break;
         }
@@ -1166,8 +1166,8 @@ describe('structure', function () {
         });
 
         var ref = structure.reference('foo');
-        ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('delete', function () { expect('Should not be triggered').to.be.false; });
+        ref.observe('add', function () { expect('Should not be triggered').to.be.false; });
         ref.observe('change', function (newData, oldData, keyPath) {
           keyPath.should.eql(['foo']);
           newData.should.equal('updated');
@@ -1267,8 +1267,8 @@ describe('structure', function () {
         });
 
         var ref = structure.reference('foo');
-        ref.observe('add', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('add', function () { expect('Should not be triggered').to.be.false; });
+        ref.observe('change', function () { expect('Should not be triggered').to.be.false; });
         ref.observe('delete', function (oldData, keyPath) {
           keyPath.should.eql(['foo']);
           oldData.should.eql('bar');
@@ -1283,8 +1283,8 @@ describe('structure', function () {
         });
 
         var ref = structure.reference('bar');
-        ref.observe('delete', function () { expect('Should not be triggered').to.be.false(); });
-        ref.observe('change', function () { expect('Should not be triggered').to.be.false(); });
+        ref.observe('delete', function () { expect('Should not be triggered').to.be.false; });
+        ref.observe('change', function () { expect('Should not be triggered').to.be.false; });
         ref.observe('add', function (newData, keyPath) {
           keyPath.should.eql(['bar']);
           newData.should.eql('baz');
