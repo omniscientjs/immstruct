@@ -113,6 +113,8 @@ function Structure (options) {
     return new Structure(options);
   }
 
+  EventEmitter.call(this, arguments);
+
   this.key = options.key || utils.generateRandomKey();
 
   this._queuedChange = false;
@@ -135,8 +137,6 @@ function Structure (options) {
     var args = [newData, oldData, keyPath];
     emit(self._referencelisteners, newData, oldData, keyPath, args);
   });
-
-  EventEmitter.call(this, arguments);
 }
 inherits(Structure, EventEmitter);
 module.exports = Structure;
