@@ -32,17 +32,17 @@
   },
   "homepage": "https://github.com/omniscientjs/immstruct",
   "dependencies": {
-    "eventemitter3": "^1.0.2",
+    "eventemitter3": "^2.0.2",
     "immutable": "^3.1.0"
   },
   "devDependencies": {
-    "browserify": "^10.2.6",
+    "browserify": "^14.1.0",
     "browserify-shim": "^3.8.9",
-    "chai": "^1.10.0",
-    "derequire": "^1.2.1",
-    "dox": "^0.6.1",
+    "chai": "^3.5.0",
+    "derequire": "^2.0.6",
+    "dox": "^0.9.0",
     "doxme": "git://github.com/mikaelbr/doxme#dev",
-    "mocha": "^2.0.1",
+    "mocha": "^3.2.0",
     "uglify-js": "^2.4.16"
   },
   "browserify-shim": {
