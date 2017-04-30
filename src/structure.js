@@ -1,7 +1,7 @@
 'use strict';
 
 var Immutable = require('immutable');
-var Cursor = require('immutable/contrib/cursor/index');
+var Cursor = require('immutable-cursor');
 var EventEmitter = require('eventemitter3');
 var utils = require('./utils');
 
